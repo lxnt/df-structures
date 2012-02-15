@@ -81,7 +81,7 @@ with_header_file {
     my @items;
 
     emit_block {
-        emit "void InitGlobals();";
+        emit "void InitGlobals(INIT_GLOBAL_FUNCTION_PARAMETERS);";
 
         for my $name (sort { $a cmp $b } keys %globals) {
             local $typename = $name;
@@ -115,7 +115,7 @@ with_header_file {
                 for my $item (@items) {
                     emit "INIT_GLOBAL_FUNCTION_ITEM(", $item->[0], ', ', $item->[1], ");";
                 }
-            } "void InitGlobals() ";
+            } "void InitGlobals(INIT_GLOBAL_FUNCTION_PARAMETERS) ";
         } "namespace global ";
     };
 } 'global_objects';
