@@ -25,7 +25,7 @@ my $input_dir = $ARGV[0] || '.';
 my $output_dir = $ARGV[1] || 'codegen';
 
 $main_namespace = $ARGV[2] || 'df';
-$export_prefix = 'DFHACK_EXPORT ';
+$export_prefix = 'DFAPI_EXPORT ';
 
 # Collect all type definitions from XML files
 
@@ -115,7 +115,7 @@ with_header_file {
                 for my $item (@items) {
                     emit "INIT_GLOBAL_FUNCTION_ITEM(", $item->[0], ', ', $item->[1], ");";
                 }
-            } "void InitGlobals(INIT_GLOBAL_FUNCTION_PARAMETERS) ";
+            } "void $export_prefix InitGlobals(INIT_GLOBAL_FUNCTION_PARAMETERS) ";
         } "namespace global ";
     };
 } 'global_objects';
