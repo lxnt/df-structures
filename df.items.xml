@@ -102,6 +102,9 @@
             <pointer type-name='general_ref'/>
         </stl-vector>
 
+        <int32_t comment='v0.34.01'/>
+        <int32_t comment='v0.34.01'/>
+
         <compound name='temp'>
             <int16_t name='unk1'/>
             <int16_t name='unk2'/>
@@ -522,7 +525,8 @@
         <int16_t name='wear'/>
         <int32_t name='wear_timer' comment='counts up to 806400'/>
 
-        <int32_t name='unk3' comment='-1'/>
+        <int32_t name='unk3' init-value='-1'/>
+        <int32_t init-value='-1' comment='v0.34.01'/>
     </class-type>
 
     -- CRAFTED ITEM
@@ -591,7 +595,7 @@
         <int32_t name='hist_figure_id' ref-target='historical_figure'/>
         <int32_t name='unit_id' ref-target='unit'/>
         <int16_t name='caste' ref-target='caste_raw' aux-value='$$.race'/>
-        <int8_t name='sex'/>
+        <int8_t name='sex' comment='-1 n/a, 0 female, 1 male'/>
 
         <int32_t name='unk_88'/>
         <int8_t name='unk_8c'/>

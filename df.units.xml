@@ -254,7 +254,7 @@
         </compound>
 
         <uint16_t name='caste' ref-target='caste_raw' aux-value='$$.race'/>
-        <uint8_t name='sex'/>
+        <int8_t name='sex' comment='-1 n/a, 0 female, 1 male'/>
 
         <int32_t name='id'/>
 
@@ -264,6 +264,8 @@
         <int32_t name='civ_id' ref-target='historical_entity'/>
         <int32_t name='population_id' ref-target='entity_population'/>
         <int32_t name='invasion_id' ref-target='invasion_info'/>
+
+        <int32_t comment='v0.34.01'/>
 
         <compound name='unknown3'>
             <compound name='unk_path' type-name='coord_path'/>
@@ -321,12 +323,24 @@
 
         <compound name='relations'>
             <uint32_t name='pregnancy_timer'/>
-            <pointer name='pregnancy_ptr'/>
-            <int16_t name='unk_21c_a'/>
+            <pointer name='pregnancy_ptr'>
+                <df-array type-name='uint8_t'/>
+                <df-array type-name='int16_t'/>
+            </pointer>
+            <int16_t name='pregnancy_mystery' comment='-1 = crash, 1 = many cats'/>
             <int16_t name='unk_21c_b'/>
             <pointer name='ghost_info' type-name='unit_ghost_info'/>
+
+            <int32_t comment='v0.34.01'/>
+
             <int32_t name='birth_year'/>
             <int32_t name='birth_time'/>
+
+            <int32_t comment='v0.34.01'/>
+            <int32_t comment='v0.34.01'/>
+            <int32_t comment='v0.34.01'/>
+            <int32_t comment='v0.34.01'/>
+
             <int32_t name='old_year' comment='could there be a death of old age time??'/>
             <int32_t name='old_time'/>
             <pointer type-name='unit' name='following'/>
@@ -435,10 +449,8 @@
             <stl-vector type-name='int32_t' name='unk_4fc'/>
             <stl-vector type-name='int16_t' name='unk_50c'/>
 
-            <pointer name="unk_51c" type-name='uint8_t' is-array='true'/>
-            <int16_t name="unk_520"/>
-            <pointer name="unk_524" type-name='int16_t' is-array='true'/>
-            <int16_t name="unk_528"/>
+            <df-array name='unk_51c' type-name='uint8_t'/>
+            <df-array name="unk_524" type-name='int16_t'/>
 
             <stl-vector name='colors' type-name='int32_t'/>
         </compound>
@@ -448,6 +460,7 @@
             <int32_t name='job_counter'/> // 540 current_job unit/walk done when reach -1, decremented every tick
             <int32_t name='unk_544'/> // if set, decrements every job_counter reroll
             <int16_t name='unk_548'/>
+            <int32_t comment='v0.34.01'/>
             <int16_t name='winded'/>
             <int16_t name='stunned'/> // 54c decrements every tick, unstun at 0
             <int16_t name='unconscious'/>
@@ -472,7 +485,36 @@
             <uint32_t name='unk_574'/>
             <uint32_t name='unk_578'/>
             <uint32_t name='unk_57c'/>
+        </compound>
 
+        <compound name='unknown5'>
+            <uint8_t comment='v0.34.01'/>
+            <stl-string comment='v0.34.01'/>
+            <stl-string comment='v0.34.01'/>
+            <stl-string comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <stl-vector comment='v0.34.01'/>
+            <stl-vector comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <stl-vector comment='v0.34.01'/>
+            <stl-vector comment='v0.34.01'/>
+            <stl-vector comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <stl-vector comment='v0.34.01'/>
+            <stl-vector comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+        </compound>
+
+        <compound name='counters2'>
             <uint32_t name='hunger_timer'/>
             <uint32_t name='thirst_timer'/>
             <uint32_t name='sleepiness_timer'/>
@@ -563,13 +605,13 @@
         </compound>
 
         <int32_t name='hist_figure_id' ref-target='historical_figure'/>
+        <int32_t name='hist_figure_id2' ref-target='historical_figure'/>
 
         <compound name='status2'>
             <uint16_t name='able_stand'/> // 794
             <uint16_t name='able_stand_impair'/> // 796
             <uint16_t name='able_grasp'/> // 798
             <uint16_t name='able_grasp_impair'/> // 79a
-            <uint32_t name='unk_79c'/>
             <uint32_t name='unk_7a0'/>
 
             <stl-vector name='body_part_temperature'>
@@ -603,6 +645,9 @@
                 <int32_t ref-target='report'/>
             </stl-vector>
 
+            <stl-vector comment='v0.34.01'/>
+            <stl-vector comment='v0.34.01'/>
+
             -- Garbage when the matching vector is empty:
             <uint32_t name='last_combat_year'/>
             <uint32_t name='last_sparring_year'/>
@@ -624,6 +669,16 @@
                     <int32_t name="unk_c"/>
                 </pointer>
             </stl-vector>
+
+            <stl-vector comment='v0.34.01'/>
+            <stl-vector comment='v0.34.01'/>
+
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
+            <uint32_t comment='v0.34.01'/>
 
             <stl-vector name='unk_850'/>
             <stl-vector name='unk_860' type-name='int32_t'/>
@@ -677,19 +732,26 @@
     <struct-type type-name='unit_inventory_item'>
         <pointer name='item' type-name='item'/>
 
-        <code-helper name='describe'>(describe-obj $.item)</code-helper>
+        <code-helper name='describe'>$.mode (describe-obj $.item)</code-helper>
 
         <enum base-type='int16_t' name='mode'>
             <enum-item name='Carried'/>
-            <enum-item name='Weapon'/>
+            <enum-item name='Weapon' comment='also shield, crutch'/>
             <enum-item name='Worn'/>
-            <enum-item name='Flask' value='4'/>
-            <enum-item name='Sewn' value='9'/>
+            <enum-item name='InBody'/>
+            <enum-item name='Flask' comment='attached to clothing'/>
+            <enum-item name='WrappedAround' comment='e.g. bandage'/>
+            <enum-item name='StuckIn'/>
+            <enum-item name='Unk7'/>
+            <enum-item name='Shouldered'/>
+            <enum-item name='SewnInto'/>
         </enum>
 
-        <int16_t name='body_part_id'/>
-        <int32_t/>
-        <int32_t init-value='-1'/>
+        <int16_t name='body_part_id'
+                 refers-to='$$._global._parent._global.body.body_plan.body_parts[$]'/>
+
+        <int32_t comment='always 0'/>
+        <int32_t init-value='-1' comment='-1 unless suture'/>
     </struct-type>
 
     <struct-type type-name='unit_spatter'>
@@ -701,7 +763,8 @@
         <int16_t name="unk_c"/>
 
         <int32_t name="unk_10"/>
-        <int16_t name="unk_14"/>
+        <int16_t name='body_part_id'
+                 refers-to='$$._global._parent._global.body.body_plan.body_parts[$]'/>
         <int16_t name="unk_16"/>
     </struct-type>
 
@@ -784,7 +847,7 @@
         <compound name='name' type-name='language_name'/>
 
         <uint32_t name='race' ref-target='creature_raw'/>
-        <uint8_t name='sex'/>
+        <int8_t name='sex' comment='-1 n/a, 0 female, 1 male'/>
         <uint16_t name='caste' ref-target='caste_raw' aux-value='$$.race'/>
 
         <code-helper name='describe'>
@@ -797,6 +860,11 @@
         <int32_t name='unk2'/>
         <int32_t name='unk3'/>
         <int32_t name='unk4'/>
+
+        <int32_t comment='v0.34.01'/>
+        <int32_t comment='v0.34.01'/>
+        <int32_t comment='v0.34.01'/>
+        <int32_t comment='v0.34.01'/>
 
         <static-array type-name='unit_attribute' name='mental_attrs' count='13' index-enum='mental_attribute_type'/>
 
