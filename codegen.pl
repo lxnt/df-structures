@@ -81,7 +81,7 @@ with_header_file {
     my @items;
 
     emit_block {
-        emit "void InitGlobals(INIT_GLOBAL_FUNCTION_PARAMETERS);";
+        emit "void DFAPI_EXPORT InitGlobals(INIT_GLOBAL_FUNCTION_PARAMETERS);";
 
         for my $name (sort { $a cmp $b } keys %globals) {
             local $typename = $name;
