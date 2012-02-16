@@ -126,13 +126,7 @@ mkdir $output_dir;
 
 {
     # Delete the old files
-    for my $name (glob "$output_dir/*.h") {
-        unlink $name;
-    }
-    for my $name (glob "$output_dir/static*.inc") {
-        unlink $name;
-    }
-    unlink "$output_dir/codegen.out.xml";
+    system "$script_root/list.pl", "$input_dir", "$output_dir", "--delete";
 
     # Write out the headers
     local $, = "\n";
