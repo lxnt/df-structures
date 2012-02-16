@@ -211,7 +211,7 @@ sub render_struct_type {
 
             if ($custom_methods) {
                 local $indentation = 0;
-                emit '#include "custom/', $typename, '.methods.inc"';
+                emit '#include "private/', $typename, '.methods.inc"';
             }
 
             if ($is_class) {
