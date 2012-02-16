@@ -2,7 +2,15 @@ PROJECT(dfapi)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-SET(DFAPI_LIBRARY_DESTINATION lib)
+if(DFHACK_LIBRARY_DESTINATION)
+    set(DFAPI_LIBRARY_DESTINATION ${DFHACK_LIBRARY_DESTINATION})
+    set(DFAPI_DATA_DESTINATION ${DFHACK_DATA_DESTINATION}) 
+else()
+    set(DFAPI_LIBRARY_DESTINATION "lib" CACHE FILEPATH "where to put libdfapi.so")
+    set(DFAPI_DATA_DESTINATION "lib" CACHE FILEPATH "where to put symbols.xml") 
+endif()
+
+
 SET(PERL_EXECUTABLE "perl" CACHE FILEPATH 
     "This is the perl executable to run in the codegen step. Tweak it if you need to run a specific one."
 )
@@ -56,3 +64,4 @@ ADD_DEPENDENCIES(dfapi generate_headers)
 TARGET_LINK_LIBRARIES ( dfapi ${LIBS})
 
 install(TARGETS dfapi LIBRARY DESTINATION ${DFAPI_LIBRARY_DESTINATION})
+install(FILES xml/symbols.xml DESTINATION ${DFAPI_DATA_DESTINATION})
