@@ -78,7 +78,6 @@ namespace df {
 	    virtual std::string readClassName(void *) = 0;
 	    virtual void lock() = 0;
 	    virtual void unlock() = 0;
-	    virtual std::map<std::string, void *>& getVtable() = 0;
 	    virtual void *getGlobal(const char *name) = 0; 
 	};
     }	

@@ -137,15 +137,6 @@ void virtual_identity::Init(df::api::essentials *pie)
             p->parent->has_children = true;
         }
     }
-
-    // Read pre-filled vtable ptrs  
-    std::map<std::string, void *> vtable = esse->getVtable();
-    for (df::virtual_identity *p = list; p; p = p->next) {
-	std::map<std::string, void *>::iterator eat = vtable.find(p->getName());
-	
-	if (eat != vtable.end())
-	    p->vtable_ptr = eat->second;
-    }
 }
 
 
