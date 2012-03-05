@@ -23,12 +23,6 @@ IF(UNIX)
     SET(CMAKE_C_FLAGS "-fvisibility=hidden -m32 -march=i686 -mtune=generic")
 ENDIF()
 
-IF(NOT DEFINED CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
-    SET(CMAKE_BUILD_TYPE "Release" CACHE STRING 
-        "Choose the type of build, options are: Debug Release RelWithDebInfo."
-    )
-ENDIF()
-
 INCLUDE_DIRECTORIES(include)
 IF(UNIX)
     add_definitions(-DLINUX_BUILD)
