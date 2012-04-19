@@ -11,29 +11,14 @@ from pprint import pformat
 df_types = {}
 
 class Error(Exception): pass
-class unknown_t(object):
-    def __init__(self, prefix):
-        self.i = 0
-        self.prefix = prefix
-    
-    def __str__(self):
-        self.i += 1
-        return "{}{:03x}".format(self.prefix, self.i-1)
-        
-    def __enter__(self):
-        return self
-        
-    def __exit__(self, et, ev, etb):
-        return False
 
-    def __iadd__(self, v):
-        self.i += v
-        return self
-        
-    def __add__(self, v):
-        return str(self) + v
+def unknown(prefix):
+    i = 0
+    while True:
+        yield "{}{:03x}".format(prefix, i)
+        i += 1
 
-globunkn = unknown_t('gunk_')
+unk = unknown('gunk_')
 tag_tab = {     'uint16_t':         'uint16_t',
                 'uint8_t':          'uint8_t',
                 'uint32_t':         'uint32_t',
@@ -97,7 +82,7 @@ def stddeque_t(e):
 def pointer_t(e):
     type_t, type_decl, dependencies = dispatch(e, 'void')
     if '{name}' in type_t: # pointer to a static-array, needs typedef.
-        td_t = str(globunkn) + '_t'
+        td_t = next(unk) + '_t'
         type_decl.append('typedef {};'.format(type_t.format(name=td_t)))
         type_t = td_t
     return type_t + '*', type_decl, dependencies
@@ -121,7 +106,7 @@ def bitfield_t(e):
     field_indent  = " " * 8
     type_t = e.get('type-name')
     if type_t is None: # implicit/inline def
-        type_t = e.get('name', globunkn) + '_t'    
+        type_t = e.get('name', next(unk)) + '_t'    
         implicit_def = True
     else:
         implicit_def = False
@@ -131,15 +116,13 @@ def bitfield_t(e):
                 base_type = base_type,
                 indent = struct_indent ))
     rv.append("{indent}struct {{".format(indent = struct_indent))
-    with unknown_t('Unk') as unk:
-        for ei in e.iter(tag = 'flag-bit'):
-            rv.append("{indent}{tname} {name}: {count};".format(
-                count = ei.attrib.get('count', 1),
-                #tname = ei.attrib.get('type-name', base_type),
-                tname = base_type,
-                indent = field_indent,
-                name = ei.get('name', unk) ))
-            unk += 1
+    for ei in e.iter(tag = 'flag-bit'):
+        rv.append("{indent}{tname} {name}: {count};".format(
+            count = ei.attrib.get('count', 1),
+            #tname = ei.attrib.get('type-name', base_type),
+            tname = base_type,
+            indent = field_indent,
+            name = ei.get('name', next(unk)) ))
     rv.append("{indent}}} bits;".format(indent = struct_indent))
     rv.append("};")
     if not implicit_def:
@@ -147,7 +130,7 @@ def bitfield_t(e):
     return type_t, rv, set()
 
 def enum_t(e):
-    global df_type_tab
+    global unk, df_type_tab
     if e.tag == 'enum' and 'type-name' in e.attrib:
         return e.get('type-name'), [], set()
         
@@ -155,7 +138,7 @@ def enum_t(e):
     item_indent = " " * 4
     type_t = e.get('type-name')
     if type_t is None: # implicit/inline def (skip namespace part)
-        type_t = e.get('name', globunkn) + '_t'
+        type_t = e.get('name', next(unk)) + '_t'
         implicit_def = True
     else:
         implicit_def = False
@@ -163,13 +146,11 @@ def enum_t(e):
     if not implicit_def:
         rv.append("namespace enums {{ namespace {name} {{".format(name = type_t))
     rv.append("enum {type_t} : {base_type} {{".format(type_t = type_t, base_type = base_type ))
-    with unknown_t('Unk') as unk:
-        for ei in e.iter(tag = 'enum-item'):
-            rv.append("{indent}{ei_name}{ei_value},".format(
-                ei_name = ei.get('name', unk),
-                ei_value = '' if ei.get('value') is None else ' = {}'.format(ei.get('value')),
-                indent = item_indent ))
-            unk += 1
+    for ei in e.iter(tag = 'enum-item'):
+        rv.append("{indent}{ei_name}{ei_value},".format(
+            ei_name = ei.get('name', next(unk)),
+            ei_value = '' if ei.get('value') is None else ' = {}'.format(ei.get('value')),
+            indent = item_indent ))
     rv.append("};")
     if not implicit_def:
         rv.append("}} }} using enums::{name}::{name};\n".format(name = type_t))
@@ -185,9 +166,9 @@ def struct_t(e):
         return df_type_tab.get(type_t, type_t), [], set([type_t])
     
     def padding(e):
-        return "uint8_t {name}[{size}]".format(size = e.get('size'), name = e.get('name', globunkn))
+        return "uint8_t {name}[{size}]".format(size = e.get('size'), name = e.get('name', next(unk)))
     def staticstring(e):
-        return "char {name}[{size}]".format(size = e.get('size'), name = e.get('name', globunkn))
+        return "char {name}[{size}]".format(size = e.get('size'), name = e.get('name', next(unk)))
     def vmethod(e, classtype_t):
         """ special case, returns strings, do not confuse with other functions """
         if bool(e.get('is-destructor')):
@@ -198,12 +179,12 @@ def struct_t(e):
         for vmp in e:
             if vmp.tag == 'pointer': # no implicit compounds here (in vmeth params). and skip types ftb
                 try:
-                    name = vmp[0].get('comment', globunkn)
+                    name = vmp[0].get('comment', next(unk))
                 except IndexError:
-                    name = vmp.get('comment', globunkn)
+                    name = vmp.get('comment', next(unk))
                 params.append("void *" + str(name))
             elif vmp.tag in tag_tab:
-                params.append(tag_tab[vmp.tag].format(vmp.tag) + " " + vmp.get('name', str(globunkn)))
+                params.append(tag_tab[vmp.tag].format(vmp.tag) + " " + vmp.get('name', next(unk)))
             elif vmp.tag == 'ret-type':
                 assert len(vmp) == 1
                 if vmp[0].tag in tag_tab:
@@ -222,7 +203,7 @@ def struct_t(e):
                 
         return "virtual {rettype_t} {name}({params});".format(
             rettype_t = rettype_t,
-            name = e.get('name', str(globunkn)),
+            name = e.get('name', next(unk)),
             params = ", ".join(params)), deps
 
     indent = " " * 4
@@ -231,7 +212,7 @@ def struct_t(e):
     pt = e.attrib.get('inherits-from', None)
     type_t = e.get('type-name')
     if type_t is None: # implicit def
-        type_t = e.get('name', globunkn) + '_t'
+        type_t = e.get('name', next(unk)) + '_t'
     
     if pt is not None:
         dependencies.add(pt)
@@ -246,7 +227,7 @@ def struct_t(e):
     
     for field in e:
         f_type_t = field.get('type-name')
-        f_name = " " + field.get('name', str(globunkn))
+        f_name = " " + field.get('name', next(unk))
         if field.tag in tag_tab:
             rv.append(indent + tag_tab[field.tag].format(f_type_t) + f_name + ';')
         elif field.tag == 'vmethod':
