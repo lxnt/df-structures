@@ -391,7 +391,6 @@ class xD(object):
             df_type_tab[e.get('type-name')] = 'df::' + type_t
             types[e.get('type-name')] = (lines, deps)
         all = set(types.keys())
-        self.known_types = all.copy() # used to skip types from ignored files in globals
         
         with cxxheader(fname, self.hdr_structs_h, ['df']) as f, io.StringIO() as stuff:
             f.write(self.indent.join(self.df_helper_defs))
@@ -433,7 +432,7 @@ class xD(object):
         gcode.write(self.hdr_globals_h)
         gcode.write('#include "globals.h"\n\n')
 
-        with cxxheader(hfname, self.hdr_globals_h, ['df', 'globals']) as ghead:
+        with cxxheader(hfname, self.hdr_globals_h, ['df', 'global']) as ghead:
             for e in etx("global-object")(self.woot):
                 name = e.get('name')
                 type_t, decl, deps = pointer_t(e)
