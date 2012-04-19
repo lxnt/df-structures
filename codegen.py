@@ -113,7 +113,7 @@ def bitfield_t(e):
         implicit_def = False
     base_type = e.attrib.get('base-type', 'uint32_t')
     rv.append("union {type_t} {{".format(type_t = type_t))
-    rv.append("{indent}{base_type} _whole;".format(
+    rv.append("{indent}{base_type} whole;".format(
                 base_type = base_type,
                 indent = struct_indent ))
     rv.append("{indent}struct {{".format(indent = struct_indent))
@@ -440,11 +440,11 @@ class xD(object):
                 if decl:
                     for l in decl:
                         ghead.write(self.indent + l + "\n")
-                    df_type_tab[type_t] = 'df::globals::' + type_t
+                    df_type_tab[type_t] = 'df::global::' + type_t
                 ghead.write("{indent}extern {type_t} const {name};\n".format(
                     type_t = type_t, name = name, indent = self.indent))
                 address = getaddr(name)
-                name = 'df::globals::' + name
+                name = 'df::global::' + name
                 if address is None:
                     print("warning: no address for ``{} {}'', assuming NULL.".format(type_t, name))
                     address = 'NULL'
