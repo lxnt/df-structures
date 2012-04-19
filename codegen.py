@@ -235,7 +235,7 @@ def struct_t(e):
         elif field.tag == 'padding':
             rv.append(indent + padding(field) + ';')
         elif field.tag == 'static-string':
-            rv.append(indent + padding(field) + ';')
+            rv.append(indent + staticstring(field) + ';')
         elif field.tag == 'pointer':
             t, decls, deps = pointer_t(field)
             rv.extend(map(lambda l: indent + l, decls))
@@ -457,12 +457,12 @@ class xD(object):
 def main():
     ap = argparse.ArgumentParser(description = 'a simpler code generator')
     ap.add_argument('-src', metavar='srcdir', default='.', help='source (xml) dir')
-    ap.add_argument('-dst', metavar='dstdir', help='destination prefix')
+    ap.add_argument('-dst', metavar='dstdir', help='destination prefix', required = True)
     ap.add_argument('-tdump', metavar='all.xml', help='dump working xml tree here')
     ap.add_argument('-verify', action='store_true', help='attempt compilation')
     pa = ap.parse_args()
     
-    if pa.dst or pa.allout:
+    if pa.dst or pa.tdump:
         xd = xD()
         for fn in glob.glob(os.path.join(pa.src, '*.xml')):
             xd.eat(fn)
