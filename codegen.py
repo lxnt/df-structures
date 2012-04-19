@@ -8,7 +8,6 @@ from lxml import etree
 from lxml.etree import XPath as etx, XMLSyntaxError, Element
 from textwrap import dedent
 from pprint import pformat
-df_types = {}
 
 class Error(Exception): pass
 
@@ -80,6 +79,7 @@ def stddeque_t(e):
     return 'std::deque<{}>'.format(type_t), type_decl, dependencies
 
 def pointer_t(e):
+    global unk
     type_t, type_decl, dependencies = dispatch(e, 'void')
     if '{name}' in type_t: # pointer to a static-array, needs typedef.
         td_t = next(unk) + '_t'
@@ -98,6 +98,7 @@ def staticarray_t(e):
     return type_t, type_decl, dependencies 
 
 def bitfield_t(e):
+    global unk, df_type_tab
     if e.tag == 'bitfield' and 'type-name' in e.attrib:
         return e.get('type-name'), [], set()
     
@@ -119,7 +120,6 @@ def bitfield_t(e):
     for ei in e.iter(tag = 'flag-bit'):
         rv.append("{indent}{tname} {name}: {count};".format(
             count = ei.attrib.get('count', 1),
-            #tname = ei.attrib.get('type-name', base_type),
             tname = base_type,
             indent = field_indent,
             name = ei.get('name', next(unk)) ))
@@ -133,7 +133,6 @@ def enum_t(e):
     global unk, df_type_tab
     if e.tag == 'enum' and 'type-name' in e.attrib:
         return e.get('type-name'), [], set()
-        
     rv = []
     item_indent = " " * 4
     type_t = e.get('type-name')
@@ -154,12 +153,11 @@ def enum_t(e):
     rv.append("};")
     if not implicit_def:
         rv.append("}} }} using enums::{name}::{name};\n".format(name = type_t))
-        df_type_tab[type_t] = "df::enums::{name}::{name}".format(name = type_t)
         df_type_tab[type_t] = "df::{name}".format(name = type_t)
     return type_t, rv, set()
 
 def struct_t(e):
-    global tag_tab, df_type_tab, implidef_tab, df_type_reg
+    global unk, tag_tab, df_type_tab, implidef_tab
     
     if e.tag == 'compound' and 'type-name' in e.attrib:
         type_t = e.get('type-name') 
@@ -356,13 +354,7 @@ class xD(object):
     def vomit(self, fname):
         with open(fname, 'wb') as f: 
             f.write(etree.tostring(self.woot, pretty_print = True))
-            
-    def vtt(self, fname):
-        with open(fname, 'w') as f:
-            global df_type_tab
-            import pprint
-            f.write(pprint.pformat(df_type_tab))
-        
+
     def emit(self, prefix, verify = False):
         self._enum_types(os.path.join(prefix, "enums.h"))
         self._bitfield_types(os.path.join(prefix, "bitfields.h"))
@@ -375,22 +367,17 @@ class xD(object):
                 print("compiled ok.")
 
     def _enum_types(self, fname):
-        global df_type_tab
         with cxxheader(fname, self.hdr_enubitf_h, ['df']) as f:
             for e in etx('enum-type')(self.woot):
                 type_t, lines, unused = enum_t(e)
-                #df_type_tab[e.get('type-name')] = 'df::' + type_t
-                df_type_tab[type_t] = 'df::'+ type_t
                 self.emitted.add(type_t)
                 for l in lines:
                     f.write(self.indent + l + "\n");
         
     def _bitfield_types(self, fname):
-        global df_type_tab
         with cxxheader(fname, self.hdr_enubitf_h, ['df']) as f:
             for e in etx('bitfield-type')(self.woot):
                 type_t, lines, unused = bitfield_t(e)
-                df_type_tab[type_t] = 'df::' + type_t
                 self.emitted.add(type_t)
                 for l in lines:
                     f.write(self.indent + l + "\n");
@@ -435,15 +422,11 @@ class xD(object):
             f.write(stuff.getvalue())
 
     def _globals(self, hfname, ccfname):
-        global tag_tab, df_type_tab
+        global df_type_tab
         def getaddr(name):
             xpa = "symbol-table[@name='{version}']/global-address[@name='{global_name}']".format(
                 version = self._version, global_name = name)
             el =  etx(xpa)(self.woot)
-            assert len(el) == 1
-            if el[0].get('value') is None:
-                print("warning: no address for global-object " + name)
-                return 'NULL'
             return el[0].get('value')
 
         gcode = open(ccfname, "w")
@@ -453,20 +436,21 @@ class xD(object):
         with cxxheader(hfname, self.hdr_globals_h, ['df', 'globals']) as ghead:
             for e in etx("global-object")(self.woot):
                 name = e.get('name')
-                address = getaddr(name)
-                if address is None:
-                    continue  
                 type_t, decl, deps = pointer_t(e)
                 if decl:
                     for l in decl:
                         ghead.write(self.indent + l + "\n")
                     df_type_tab[type_t] = 'df::globals::' + type_t
-                
                 ghead.write("{indent}extern {type_t} const {name};\n".format(
                     type_t = type_t, name = name, indent = self.indent))
-                gcode.write("{type_t} const {name} = ({type_t}){value};\n".format(
+                address = getaddr(name)
+                name = 'df::globals::' + name
+                if address is None:
+                    print("warning: no address for ``{} {}'', assuming NULL.".format(type_t, name))
+                    address = 'NULL'
+                gcode.write("{type_t} const {name} = ({type_t}) {value};\n".format(
                     type_t = df_type_tab.get(type_t, type_t),
-                    name ='df::globals::' + name, 
+                    name = name, 
                     value = address))
         gcode.close()
 
