@@ -131,9 +131,11 @@ def bitfield_t(e):
 
 def enum_t(e):
     global unk, df_type_tab
+    funattrs = "__attribute__ ((const, unused))"
     if e.tag == 'enum' and 'type-name' in e.attrib:
         return e.get('type-name'), [], set()
     rv = []
+    kdef = []
     item_indent = " " * 4
     type_t = e.get('type-name')
     if type_t is None: # implicit/inline def (skip namespace part)
@@ -142,8 +144,9 @@ def enum_t(e):
     else:
         implicit_def = False
     base_type = e.get('base-type', 'int32_t')
-    if not implicit_def:
-        rv.append("namespace enums {{ namespace {name} {{".format(name = type_t))
+    kdef.append("static const char * const key({0} k) {1};".format(type_t, funattrs))
+    kdef.append("static const char * const key({0} k) {{".format(type_t))
+    kdef.append(item_indent + "switch(k) {")
     _min = 1<<31
     _max = -1<<31
     _count = 0
@@ -159,16 +162,22 @@ def enum_t(e):
             value_s = ''
         if value < _min: _min = value
         if value > _max: _max = value
+        name = ei.get('name', next(unk))
         rv.append("{indent}{ei_name}{ei_value},".format(
-            ei_name = ei.get('name', next(unk)),
+            ei_name = name,
             ei_value = value_s,
             indent = item_indent ))
+        kdef.append(item_indent*2 + 'case {0}: return "{0}";'.format(name))
     rv.append("};")
     if not implicit_def:
+        rv.insert(0, "namespace enums {{ namespace {} {{".format(type_t))
         rv.append("static const int32_t _min = {};".format(_min))
         rv.append("static const int32_t _max = {};".format(_max))
         rv.append("static const int32_t _count = {};".format(_count))
-    if not implicit_def:
+        kdef.append(item_indent*2 + "default: return NULL;")
+        kdef.append(item_indent + "}")
+        kdef.append("}")
+        rv.extend(kdef)
         rv.append("}} }} using enums::{name}::{name};\n".format(name = type_t))
         df_type_tab[type_t] = "df::{name}".format(name = type_t)
     return type_t, rv, set()
