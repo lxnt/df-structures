@@ -19,9 +19,11 @@
         <uint8_t name='tile'/>
         <int16_t name='fg_color'/>
         <int16_t name='bg_color'/>
-        <stl-vector name='unk1' type-name='int32_t'/>
-        <stl-vector name='unk2' type-name='int32_t'/>
-        <stl-vector name='unk3' type-name='int32_t'/>
+
+        <stl-vector name='block_x' type-name='int32_t'/>
+        <stl-vector name='block_y' type-name='int32_t'/>
+        <stl-vector name='block_z' type-name='int32_t'/>
+
         <stl-vector name='units'>
             <int32_t ref-target='unit'/>
         </stl-vector>
@@ -281,11 +283,72 @@
         <stl-vector name='unk23e0' type-name='int16_t'/>
         <stl-vector name='unk23ec' type-name='int8_t'/>
 
-        <static-array name='unk23f8' count='2'>
-            <static-array count='30'>
-                <stl-vector type-name='int32_t'/>
-            </static-array>
-        </static-array>
+        <compound name='economy_prices'>
+            <compound name='price_adjustment'>
+                <stl-vector type-name='int32_t' name='general_items' index-enum='item_type'/>
+                <stl-vector type-name='int32_t' name='weapons' index-refers-to='$global.world.raws.itemdefs.weapons[$]'/>
+                <stl-vector type-name='int32_t' name='armor' index-refers-to='$global.world.raws.itemdefs.armor[$]'/>
+                <stl-vector type-name='int32_t' name='handwear' index-refers-to='$global.world.raws.itemdefs.helms[$]'/>
+                <stl-vector type-name='int32_t' name='footwear' index-refers-to='$global.world.raws.itemdefs.shoes[$]'/>
+                <stl-vector type-name='int32_t' name='headwear' index-refers-to='$global.world.raws.itemdefs.gloves[$]'/>
+                <stl-vector type-name='int32_t' name='legwear' index-refers-to='$global.world.raws.itemdefs.pants[$]'/>
+                <stl-vector type-name='int32_t' name='prepared_food' index-refers-to='$global.world.raws.itemdefs.food[$]'/>
+                <stl-vector type-name='int32_t' name='wood'/>
+                <stl-vector type-name='int32_t' name='thread_cloth'/>
+                <stl-vector type-name='int32_t' name='bone'/>
+                <stl-vector type-name='int32_t' name='tooth'/>
+                <stl-vector type-name='int32_t' name='horn'/>
+                <stl-vector type-name='int32_t' name='pearl'/>
+                <stl-vector type-name='int32_t' name='shell'/>
+                <stl-vector type-name='int32_t' name='leather'/>
+                <stl-vector type-name='int32_t' name='silk'/>
+                <stl-vector type-name='int32_t' name='inorganic'/>
+                <stl-vector type-name='int32_t' name='meat'/>
+                <stl-vector type-name='int32_t' name='fish'/>
+                <stl-vector type-name='int32_t' name='plants'/>
+                <stl-vector type-name='int32_t' name='drinks'/>
+                <stl-vector type-name='int32_t' name='extract_animal'/>
+                <stl-vector type-name='int32_t' name='extract_plant'/>
+                <stl-vector type-name='int32_t' name='mill_animal'/>
+                <stl-vector type-name='int32_t' name='mill_plant'/>
+                <stl-vector type-name='int32_t' name='cheese_animal'/>
+                <stl-vector type-name='int32_t' name='cheese_plant'/>
+                <stl-vector type-name='int32_t' name='pets'/>
+                <stl-vector type-name='int32_t' name='yarn'/>
+            </compound>
+            <compound name='price_setter'>
+                <stl-vector name='general_items' index-enum='item_type'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='weapons' index-refers-to='$global.world.raws.itemdefs.weapons[$]'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='armor' index-refers-to='$global.world.raws.itemdefs.armor[$]'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='handwear' index-refers-to='$global.world.raws.itemdefs.helms[$]'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='footwear' index-refers-to='$global.world.raws.itemdefs.shoes[$]'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='headwear' index-refers-to='$global.world.raws.itemdefs.gloves[$]'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='legwear' index-refers-to='$global.world.raws.itemdefs.pants[$]'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='prepared_food' index-refers-to='$global.world.raws.itemdefs.food[$]'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='wood'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='thread_cloth'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='bone'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='tooth'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='horn'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='pearl'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='shell'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='leather'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='silk'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='inorganic'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='meat'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='fish'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='plants'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='drinks'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='extract_animal'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='extract_plant'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='mill_animal'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='mill_plant'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='cheese_animal'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='cheese_plant'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='pets'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='yarn'><pointer type-name='unit'/></stl-vector>
+            </compound>
+        </compound>
 
         <compound name='stockpile'>
             <int32_t name='reserved_bins'/>
@@ -371,8 +434,8 @@
                 <pointer type-name='burrow'/>
             </stl-vector>
             <int32_t name='next_id'/>
-            <int32_t name='sel_index1'/>
-            <int32_t name='sel_index2'/>
+            <int32_t name='sel_index' refers-to='$$._parent.list[$]'/>
+            <int32_t name='sel_id' ref-target='burrow'/>
             <bool name='in_add_units_mode'/>
             <stl-vector name='list_units'>
                 <pointer type-name='unit'/>
@@ -381,7 +444,8 @@
             <int32_t name='unit_cursor_pos'/>
             <bool name='in_define_mode'/>
             <compound name='rect_start' type-name='coord'/>
-            <int32_t name='brush_mode'/>
+            <int16_t name='brush_mode'/>
+            <bool name='in_edit_name_mode'/>
             <int16_t name='sym_selector'/>
             <int16_t name='sym_tile'/>
             <int16_t name='sym_fg_color'/>

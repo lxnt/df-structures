@@ -195,6 +195,7 @@
             <item-attr name='generic_item' value='COIN'/>
             <item-attr name='generic_item' value='SPLINT'/>
             <item-attr name='generic_item' value='TOOL'/>
+            <item-attr name='generic_item' value='BOOK'/>
         </enum-item>
         <enum-item name='ANY_GENERIC36'>
             <item-attr name='generic_item' value='ARMOR'/>
@@ -340,7 +341,7 @@
             <item-attr name='item' value='PIPE_SECTION'/>
         </enum-item>
 
-        <enum-item name='ANY_ITEM_FLAG_800'/>
+        <enum-item name='ANY_ENCASED'/>
         <enum-item name='ANY_IN_CONSTRUCTION'/>
         <enum-item name='DRINK'>
             <item-attr name='item' value='DRINK'/>
@@ -424,7 +425,9 @@
         <enum-item name='CORPSE'>
             <item-attr name='item' value='CORPSE'/>
         </enum-item>
-        <enum-item name='UNKNOWN_95'/>
+        <enum-item name='BOOK'>
+            <item-attr name='item' value='BOOK'/>
+        </enum-item>
 
         <enum-item name='FIGURINE'>
             <item-attr name='item' value='FIGURINE'/>
@@ -668,7 +671,7 @@
         <enum-item name='ANY_WEBS'/>
         <enum-item name='PIPE_SECTION'/>
 
-        <enum-item name='ANY_ITEM_FLAG_800'/>
+        <enum-item name='ANY_ENCASED'/>
         <enum-item name='ANY_IN_CONSTRUCTION'/>
         <enum-item name='DRINK'/>
         <enum-item name='ANY_DRINK'/>
@@ -761,7 +764,7 @@
         </enum-item>
 
         <enum-item name='ANY_CORPSE'/>
-        <enum-item name='UNKNOWN_95'/>
+        <enum-item name='BOOK'/>
     </enum-type>
 
 </data-definition>
