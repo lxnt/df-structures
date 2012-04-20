@@ -1,13 +1,13 @@
 #!/usr/bin/python3.2
 # -*- encoding: utf-8 -*-
-#   -<<- IT CAN BE DONE CLEANER ->>-
-# PARENTIAL ADVISORY:: EXPLICIT LYRICS
 
 import os, os.path, glob, sys, argparse, io
 from lxml import etree
 from lxml.etree import XPath as etx, XMLSyntaxError, Element
 from textwrap import dedent
 from pprint import pformat
+
+import static
 
 class Error(Exception): pass
 
@@ -269,6 +269,11 @@ def struct_t(e):
             dependencies.update(deps)
         else:
             raise Error(pformat(field.tag, f_type_t))
+    rv.extend(static.methods.get(type_t, []))
+    try:
+        dependencies.update(static.dependencies[type_t])
+    except KeyError:
+        pass
     rv.append("};")
     return type_t, rv, dependencies
 
