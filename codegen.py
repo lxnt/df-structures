@@ -144,13 +144,30 @@ def enum_t(e):
     base_type = e.get('base-type', 'int32_t')
     if not implicit_def:
         rv.append("namespace enums {{ namespace {name} {{".format(name = type_t))
+    _min = 1<<31
+    _max = -1<<31
+    _count = 0
+    value = -1
     rv.append("enum {type_t} : {base_type} {{".format(type_t = type_t, base_type = base_type ))
     for ei in e.iter(tag = 'enum-item'):
+        _count += 1
+        if 'value' in ei.attrib:
+            value = int(ei.get('value'))
+            value_s = ' = {}'.format(value)
+        else:
+            value += 1
+            value_s = ''
+        if value < _min: _min = value
+        if value > _max: _max = value
         rv.append("{indent}{ei_name}{ei_value},".format(
             ei_name = ei.get('name', next(unk)),
-            ei_value = '' if ei.get('value') is None else ' = {}'.format(ei.get('value')),
+            ei_value = value_s,
             indent = item_indent ))
     rv.append("};")
+    if not implicit_def:
+        rv.append("static const int32_t _min = {};".format(_min))
+        rv.append("static const int32_t _max = {};".format(_max))
+        rv.append("static const int32_t _count = {};".format(_count))
     if not implicit_def:
         rv.append("}} }} using enums::{name}::{name};\n".format(name = type_t))
         df_type_tab[type_t] = "df::{name}".format(name = type_t)
