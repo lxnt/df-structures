@@ -1,4 +1,5 @@
 codegen/*
+__pycache__/*
 *~
 sbcl-runtime
 cl-linux-debug
