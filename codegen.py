@@ -8,7 +8,7 @@ from textwrap import dedent
 from pprint import pformat
 
 import static
-
+static_crap = []
 class Error(Exception): pass
 
 def unknown(prefix):
@@ -111,7 +111,7 @@ def bitfield_t(e):
         implicit_def = True
     else:
         implicit_def = False
-    base_type = e.attrib.get('base-type', 'uint32_t')
+    base_type = e.get('base-type', 'uint32_t')
     rv.append("union {type_t} {{".format(type_t = type_t))
     rv.append("{indent}{base_type} whole;".format(
                 base_type = base_type,
@@ -141,7 +141,7 @@ def enum_t(e):
         implicit_def = True
     else:
         implicit_def = False
-    base_type = e.attrib.get('base-type', 'int32_t')
+    base_type = e.get('base-type', 'int32_t')
     if not implicit_def:
         rv.append("namespace enums {{ namespace {name} {{".format(name = type_t))
     rv.append("enum {type_t} : {base_type} {{".format(type_t = type_t, base_type = base_type ))
@@ -157,7 +157,7 @@ def enum_t(e):
     return type_t, rv, set()
 
 def struct_t(e):
-    global unk, tag_tab, df_type_tab, implidef_tab
+    global unk, tag_tab, df_type_tab, implidef_tab, static_crap
     
     if e.tag == 'compound' and 'type-name' in e.attrib:
         type_t = e.get('type-name') 
@@ -173,7 +173,7 @@ def struct_t(e):
             return "virtual ~{}();".format(classtype_t), []
         params = []
         deps = set()
-        rettype_t = e.attrib.get('ret-type', 'void')
+        rettype_t = e.get('ret-type', 'void')
         for vmp in e:
             if vmp.tag == 'pointer': # no implicit compounds here (in vmeth params). and skip types ftb
                 try:
@@ -207,7 +207,7 @@ def struct_t(e):
     indent = " " * 4
     rv = []
     dependencies = set() 
-    pt = e.attrib.get('inherits-from', None)
+    pt = e.get('inherits-from', None)
     type_t = e.get('type-name')
     if type_t is None: # implicit def
         type_t = e.get('name', next(unk)) + '_t'
@@ -270,6 +270,14 @@ def struct_t(e):
         else:
             raise Error(pformat(field.tag, f_type_t))
     rv.extend(static.methods.get(type_t, []))
+    iv = e.get('instance-vector')
+    if iv is not None:
+        rv.append(indent + "static std::vector<{}*> &get_vector(); ".format(type_t))
+        iv = iv.replace('$global.world.', 'df::global::world->')
+        iv = iv.replace('$global.ui.', 'df::global::ui->')
+        iv = iv.replace("world_data.", "world_data->")
+        static_crap.append("std::vector<df::{0}*> &df::{0}::get_vector() {{ return {1}; }}".format(
+            type_t, iv  ))
     try:
         dependencies.update(static.dependencies[type_t])
     except KeyError:
@@ -426,7 +434,7 @@ class xD(object):
             f.write(stuff.getvalue())
 
     def _globals(self, hfname, ccfname):
-        global df_type_tab
+        global df_type_tab, static_crap
         def getaddr(name):
             xpa = "symbol-table[@name='{version}']/global-address[@name='{global_name}']".format(
                 version = self._version, global_name = name)
@@ -456,6 +464,8 @@ class xD(object):
                     type_t = df_type_tab.get(type_t, type_t),
                     name = name, 
                     value = address))
+        for l in static_crap:
+            gcode.write(l + "\n")
         gcode.close()
 
 def main():
