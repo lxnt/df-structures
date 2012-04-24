@@ -33,6 +33,9 @@ methods = {
                 coord2d():  x(-30000), y(-30000) {};
                 coord2d(uint16_t _x, uint16_t _y) : x(_x), y(_y) {};
                 bool valid() const { return x != -30000; }
+                bool in(const coord2d &e) const {
+                    return x >= 0 and x < e.x and y >= 0 and y < e.y;
+                }
                 void clear() { x = y = -30000; }
                 bool operator==(const coord2d &other) const {
                     return (x == other.x) && (y == other.y);
@@ -66,6 +69,9 @@ methods = {
                 operator coord2d() const { return coord2d(x,y); }
                 bool valid() const { return x != -30000; }
                 void clear() { x = y = z = -30000; }
+                bool in(const coord &e) const {
+                    return x >= 0 and x < e.x and y >= 0 and y < e.y and z >= 0 and z < e.z;
+                }                
                 bool operator<(const coord &other) const {
                     if (x != other.x) return (x < other.x);
                     if (y != other.y) return (y < other.y);
