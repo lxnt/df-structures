@@ -1,5 +1,31 @@
 #!/usr/bin/python3.2
 # -*- encoding: utf-8 -*-
+"""
+https://github.com/lxnt/df-structures
+Copyright (c) 2012-2012 Alexander Sabourenkov (screwdriver@lxnt.info)
+Copyright (c) 2009-2011 Petr Mrázek (peterix@gmail.com)
+
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any
+damages arising from the use of this software.
+
+Permission is granted to anyone to use this software for any
+purpose, including commercial applications, and to alter it and
+redistribute it freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must
+not claim that you wrote the original software. If you use this
+software in a product, an acknowledgment in the product documentation
+would be appreciated but is not required.
+
+2. Altered source versions must be plainly marked as such, and
+must not be misrepresented as being the original software.
+
+3. This notice may not be removed or altered from any source
+distribution.
+
+Based on work of Alexander Gavrilov (https://github.com/angavrilov/df-structures)
+"""
 
 import os, os.path, glob, sys, argparse, io
 from lxml import etree
@@ -129,11 +155,16 @@ def bitfield_t(e):
         df_type_tab[type_t] = 'df::' + type_t    
     return type_t, rv, set()
 
+enum_tab = {} # defined enums and their basetypes
 def enum_t(e):
-    global unk, df_type_tab
+    global unk, df_type_tab, enum_tab
     funattrs = "__attribute__ ((const, unused))"
     if e.tag == 'enum' and 'type-name' in e.attrib:
-        return e.get('type-name'), [], set()
+        fqtn = 'df::enums::{0}::{0}'.format(e.get('type-name'))
+        if e.get('base-type') and e.get('base-type') != enum_tab[e.get('type-name')]:
+            return 'df::enums::enum_field<{},{}>'.format(fqtn, e.get('base-type')), [], set()
+        else:
+            return fqtn, [], set()
     rv = []
     kdef = []
     item_indent = " " * 4
@@ -144,6 +175,7 @@ def enum_t(e):
     else:
         implicit_def = False
     base_type = e.get('base-type', 'int32_t')
+    enum_tab[type_t] = base_type
     kdef.append("static const char * const key({0} k) {1};".format(type_t, funattrs))
     kdef.append("static const char * const key({0} k) {{".format(type_t))
     kdef.append(item_indent + "switch(k) {")
@@ -359,7 +391,43 @@ class xD(object):
         #include "enums.h"
         #include "bitfields.h"
         """)
-    hdr_enubitf_h = '#include <stdint.h>\n'
+    hdr_bitfields_h = dedent("""
+        #include <stdint.h>
+        """)
+    hdr_enums_h = dedent("""
+        #include <stdint.h>
+        namespace df { namespace enums {
+        /* dfhack::library/include/DataDefs.h */
+        template<class EnumType, class IntType = int32_t>
+        struct enum_field {
+            IntType value;
+
+            enum_field() {}
+            enum_field(EnumType ev) : value(IntType(ev)) {}
+            template<class T>
+            enum_field(enum_field<EnumType,T> ev) : value(IntType(ev.value)) {}
+
+            operator EnumType () { return EnumType(value); }
+            enum_field<EnumType,IntType> &operator=(EnumType ev) {
+                value = IntType(ev); return *this;
+            }
+        };
+
+        template<class EnumType, class IntType1, class IntType2>
+        inline bool operator== (enum_field<EnumType,IntType1> a, enum_field<EnumType,IntType2> b)
+        {
+            return EnumType(a) == EnumType(b);
+        }
+
+        template<class EnumType, class IntType1, class IntType2>
+        inline bool operator!= (enum_field<EnumType,IntType1> a, enum_field<EnumType,IntType2> b)
+        {
+            return EnumType(a) != EnumType(b);
+        }
+            
+        } }
+        """)
+        
     hdr_globals_h = hdr_structs_h + '#include "structs.h"\n'
     indent = " " * 4
     df_helper_defs = dedent("""
@@ -406,7 +474,7 @@ class xD(object):
                 print("compiled ok.")
 
     def _enum_types(self, fname):
-        with cxxheader(fname, self.hdr_enubitf_h, ['df']) as f:
+        with cxxheader(fname, self.hdr_enums_h, ['df']) as f:
             for e in etx('enum-type')(self.woot):
                 type_t, lines, unused = enum_t(e)
                 self.emitted.add(type_t)
@@ -414,7 +482,7 @@ class xD(object):
                     f.write(self.indent + l + "\n");
         
     def _bitfield_types(self, fname):
-        with cxxheader(fname, self.hdr_enubitf_h, ['df']) as f:
+        with cxxheader(fname, self.hdr_bitfields_h, ['df']) as f:
             for e in etx('bitfield-type')(self.woot):
                 type_t, lines, unused = bitfield_t(e)
                 self.emitted.add(type_t)
