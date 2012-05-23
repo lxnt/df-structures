@@ -102,7 +102,7 @@
         <flag-bit name='unk7'/>
 
         <flag-bit name='unk8' comment='Is set to 1 every tick for non-dead creatures.'/>
-        <flag-bit name='unk9' comment='Is set to 0 every tick for non-dead creatures.'/>
+        <flag-bit name='wait_until_reveal' comment='Blocks all kind of things until tile is revealed.'/>
         <flag-bit name='scuttle'>
             <comment>
                 Scuttle creature: causes creature to be killed, leaving a behind
@@ -112,6 +112,11 @@
         <flag-bit name='unk11'/>
 
         <flag-bit name='ghostly'/>
+        <flag-bit name='unk13'/>
+        <flag-bit name='unk14'/>
+        <flag-bit name='unk15'/>
+
+        <flag-bit name='unk16' comment='something to do with werewolves?'/>
     </bitfield-type>
 
     <enum-type type-name='personality_facet_type'>
@@ -289,8 +294,8 @@
             <uint32_t name='unk_144'/>
         </compound>
 
-        <stl-vector name='meetings'>
-            <pointer type-name='meeting_ref'/>
+        <stl-vector name='specific_refs'>
+            <pointer type-name='specific_ref'/>
         </stl-vector>
         <stl-vector name='refs'>
             <pointer type-name='general_ref'/>
@@ -363,7 +368,7 @@
             <uint16_t name='unk_238' comment='invalid unless following'/>
 
             <int32_t name='pet_owner_id' ref-target='unit'/>
-            <int32_t name='married_id' ref-target='unit'
+            <int32_t name='spouse_id' ref-target='unit'
                      comment='not used in relationship screen..'/>
             <int32_t name='mother_id' ref-target='unit'/>
             <int32_t name='father_id' ref-target='unit'/>
@@ -380,6 +385,8 @@
         </compound>
 
         <compound name='last_hit' type-name='history_hit_item'/>
+
+        <int32_t name='riding_item_id' ref-target='item' comment='v0.34.08'/>
 
         <stl-vector name='inventory'>
             <pointer type-name='unit_inventory_item'/>
@@ -409,7 +416,7 @@
             <uint16_t name='unk_2ee'/>
             <uint16_t name='unk_2f0_cntr'/> // increments every tick
             <pointer comment='df_job' name='current_job' type-name='job'/>
-            <uint16_t name='unk_2f8'/>
+            <enum base-type='int16_t' type-name='job_skill' name='mood_skill'/>
             <uint32_t name='unk_2fc'/>
             <uint32_t name='unk_300'/>
             <uint32_t name='unk_304'/>
@@ -484,9 +491,9 @@
                 <enum-item name='Tantrum'/>
             </enum>
 
-            <uint32_t name='unk_564'/>
-            <uint32_t name='unk_568'/>
-            <uint32_t name='unk_56c'/>
+            <uint32_t name='pain'/>
+            <uint32_t name='nausea'/>
+            <uint32_t name='dizziness'/>
         </compound>
 
         <compound name='curse'>
@@ -531,10 +538,10 @@
         </compound>
 
         <compound name='counters2'>
-            <uint32_t name='unk_570'/>
-            <uint32_t name='unk_574'/>
-            <uint32_t name='unk_578'/>
-            <uint32_t name='unk_57c'/>
+            <uint32_t name='paralysis'/>
+            <uint32_t name='numbness'/>
+            <uint32_t name='fever'/>
+            <uint32_t name='exhaustion'/>
 
             <uint32_t name='hunger_timer'/>
             <uint32_t name='thirst_timer'/>
@@ -595,7 +602,9 @@
 
             <static-array type-name='bool' name='labors' index-enum='unit_labor' count='94'/>
 
-            <stl-vector name='unk_6d0'/>
+            <stl-vector name='wrestle_items'>
+                <pointer type-name='unit_item_wrestle'/>
+            </stl-vector>
             <stl-vector name='unk_6e0' type-name='int32_t'/> // item ids?
 
             <stl-vector name='recent_events'>
@@ -684,12 +693,7 @@
 
         <stl-vector name='used_items'>
             <comment>Contains worn clothes, armor, weapons, arrows fired by archers</comment>
-            <pointer>
-                <int32_t name="id" ref-target='item'/>
-                <int32_t name="unk_4"/>
-                <int32_t name="unk_8"/>
-                <int32_t name="unk_c"/>
-            </pointer>
+            <pointer type-name='unit_item_use'/>
         </stl-vector>
 
         <stl-vector name='adventurer_knows' comment='if not, no names'>
@@ -697,14 +701,14 @@
         </stl-vector>
 
         <compound name='unknown8'>
-            <stl-vector comment='v0.34.01'/>
+            <stl-vector name='unk1' comment='v0.34.01'/>
 
-            <pointer comment='v0.34.01'/>
+            <pointer name='unk2' comment='v0.34.01'/>
             <int32_t name='were_race' ref-target='creature_raw'/>
             <int32_t name='were_caste' ref-target='caste_raw' aux-value='$$.were_race'/>
             <int32_t name='normal_race' ref-target='creature_raw'/>
             <int32_t name='normal_caste' ref-target='caste_raw' aux-value='$$.normal_race'/>
-            <int32_t init-value='-1' comment='v0.34.01'/>
+            <int32_t name='unk3' init-value='-1' comment='v0.34.01'/>
 
             <stl-vector name='unk_850'/>
             <stl-vector name='unk_860' type-name='int32_t'/>
@@ -821,11 +825,11 @@
             <enum-item/>
             <enum-item/>
             <enum-item name='Migrant'/>
+            <enum-item name='RoomComplaint'/>
+            <enum-item name='UnnamedResident' comment='upon reaching zero, resident creature gets named'/>
             <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item name='ClaimCooldown'/>
+            <enum-item name='ClaimTrinketCooldown'/>
+            <enum-item name='ClaimClothingCooldown'/>
             <enum-item name='WantsDrink' comment='ALCOHOLIC'/>
             <enum-item name='LikesOutdoors' comment='MOUNTAIN'/>
             <enum-item name='Hardened' comment='COMBATHARDNESS'/>
@@ -873,10 +877,24 @@
     </struct-type>
 
     <struct-type type-name='unit_thought'>
-        <int16_t name="type"/>
+        <enum base-type='int16_t' name='type' type-name='unit_thought_type'/>
         <int32_t name="age" comment='+1 per frame'/>
         <int32_t name="subtype" init-value='-1'/>
         <int32_t name="severity"/>
+    </struct-type>
+
+    <struct-type type-name='unit_item_wrestle'>
+        <padding size='20'/>
+        <int32_t name='item1' ref-target='item'/>
+        <int32_t name='item2' ref-target='item'/>
+        ...?
+    </struct-type>
+
+    <struct-type type-name='unit_item_use' key-field='id'>
+        <int32_t name="id" ref-target='item'/>
+        <int32_t name="time_in_use"/>
+        <int32_t name="has_grown_attached"/>
+        <int32_t name="affection_level" comment='min 50 for attached, 1000 for name'/>
     </struct-type>
 
     <struct-type type-name='unit_health_info'>

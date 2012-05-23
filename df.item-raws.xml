@@ -96,6 +96,11 @@
         <stl-string name="id"/>
         <int16_t name="subtype"/>
 
+        <df-flagarray name='base_flags' comment='v0.34.08; [0] = generated'/>
+        <stl-vector name='raw_strings'>
+            <pointer type-name='stl-string'/>
+        </stl-vector>
+
         <code-helper name='describe'>$.id</code-helper>
 
         <virtual-methods>
@@ -106,6 +111,7 @@
             </vmethod>
             <vmethod name='categorize' comment='add to world.raws.itemdefs.whatever'/>
             <vmethod name='finalize' comment='calculate stuff like base value'/>
+            <vmethod/>
             <vmethod is-destructor='true'/>
         </virtual-methods>
     </class-type>
@@ -282,6 +288,10 @@
         <enum-item name='HAS_EDGE_ATTACK'/>
         <enum-item name='METAL_WEAPON_MAT'/>
         <enum-item name='UNIMPROVABLE'/>
+        <enum-item name='SOFT_MAT'/>
+        <enum-item name='WOOD_MAT'/>
+        <enum-item name='INVERTED_TILE'/>
+        <enum-item name='FURNITURE'/>
     </enum-type>
 
     <enum-type type-name='tool_uses' base-type='int16_t'>
@@ -300,7 +310,9 @@
         <enum-item name='FOOD_STORAGE'/>
         <enum-item name='HIVE'/>
         <enum-item name='NEST_BOX'/>
-        <enum-item name='POUCH'/>
+        <enum-item name='SMALL_OBJECT_STORAGE'/>
+        <enum-item name='TRACK_CART'/>
+        <enum-item name='HEAVY_OBJECT_HAULING'/>
     </enum-type>
 
     <class-type type-name='itemdef_toolst' inherits-from='itemdef'

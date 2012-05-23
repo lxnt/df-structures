@@ -39,6 +39,12 @@
         <enum-item/>
     </enum-type>
 
+    <enum-type type-name='units_other_id'>
+        <enum-item name='ANY_BABY1'/>
+        <enum-item name='ANY_ANIMAL'/>
+        <enum-item name='ANY_BABY2'/>
+    </enum-type>
+
     <struct-type type-name='death_info'
                  instance-vector='$global.world.deaths.all' key-field='id'>
         dtor 0x8C1AE10
@@ -128,11 +134,21 @@
 
     <struct-type type-name='world'>
         dtor 89fff80
-        <stl-vector name='unk_0'>
-            <pointer/>
+        <stl-vector name='glowing_barriers'>
+            <pointer>
+                <int32_t name='id'/>
+                <stl-vector/>
+                <compound name='pos' type-name='coord'/>
+            </pointer>
         </stl-vector>
-        <stl-vector name='unk_C'>
-            <pointer/>
+        <stl-vector name='deep_vein_hollows'>
+            <pointer>
+                <int8_t/>
+                <int32_t/>
+                <compound name='tiles' type-name='coord_path'/>
+                <int32_t/>
+                <int16_t/>
+            </pointer>
         </stl-vector>
         <stl-vector comment='v0.34.01'/>
 
@@ -199,8 +215,8 @@
         <stl-vector name='unk_fc'>
             <pointer/>
         </stl-vector>
-        <stl-vector name='unk_108'>
-            <pointer/>
+        <stl-vector name='effects'>
+            <pointer type-name='effect_info'/>
         </stl-vector>
 
         <stl-vector comment='v0.34.01'/>
@@ -258,7 +274,14 @@
                 <pointer type-name='unit'/>
             </stl-vector>
 
-            <static-array name='other' count='4'>
+            <stl-vector name='active'>
+                <comment>
+                    not sorted; [0] is adventurer; removed if kidnapped etc but not if dead
+                </comment>
+                <pointer type-name='unit'/>
+            </stl-vector>
+
+            <static-array name='other' count='3' index-enum='units_other_id'>
                 <stl-vector>
                     <pointer type-name='unit'/>
                 </stl-vector>
@@ -341,7 +364,7 @@
                 <pointer type-name='building'/>
             </stl-vector>
 
-            <static-array name='other' count='86'>
+            <static-array name='other' count='87' index-enum='buildings_other_id'>
                 <stl-vector>
                     <pointer type-name='building'/>
                 </stl-vector>
@@ -352,8 +375,8 @@
             </stl-vector>
         </compound>
 
-        <bool name='unk5a'/>
-        <bool name='unk5b'/>
+        <bool name='check_bridge_collapse'/>
+        <bool name='check_machine_collapse' comment='?'/>
 
         -- Machines (connected groups of gears and so on)
 
@@ -443,11 +466,21 @@
             <stl-vector name='all'>
                 <pointer type-name='plant'/>
             </stl-vector>
-            <static-array name='other' count='5'>
-                <stl-vector>
-                    <pointer type-name='plant'/>
-                </stl-vector>
-            </static-array>
+            <stl-vector name='shrub_dry'>
+                <pointer type-name='plant'/>
+            </stl-vector>
+            <stl-vector name='shrub_wet'>
+                <pointer type-name='plant'/>
+            </stl-vector>
+            <stl-vector name='tree_dry'>
+                <pointer type-name='plant'/>
+            </stl-vector>
+            <stl-vector name='tree_wet'>
+                <pointer type-name='plant'/>
+            </stl-vector>
+            <stl-vector name='empty'>
+                <pointer type-name='plant'/>
+            </stl-vector>
         </compound>
 
         -- Adventure quests
@@ -580,10 +613,24 @@
             </stl-vector>
         </compound>
 
+        <compound name='vehicles' comment='v0.34.08'>
+            <stl-vector name='all'>
+                <pointer type-name='vehicle'/>
+            </stl-vector>
+            <stl-vector name='active'>
+                <pointer type-name='vehicle'/>
+            </stl-vector>
+            <stl-vector name='bad' has-bad-pointers='true'>
+                <pointer type-name='vehicle'/>
+            </stl-vector>
+        </compound>
+
         <pointer name='selected_building' type-name='building'/>
         <enum base-type='int16_t' name='selected_stockpile_type' type-name='stockpile_category'/>
-        <bool/>
-        <padding size='8' alignment='4' comment='0'/>
+        <bool name='update_selected_building'/>
+        <int16_t name='building_width'/>
+        <int16_t name='building_height'/>
+        <enum name='selected_direction' base-type='int8_t' type-name='screw_pump_direction'/>
 
         <compound name='map'>
             52cdc
@@ -616,12 +663,13 @@
             <int32_t name='region_x'/>
             <int32_t name='region_y'/>
             <int32_t name='region_z'/>
+
+            <static-array name='unknown_52d20'
+                          count='2810' type-name='int16_t'/>
+
+            <pointer type-name='z_level_flags' name='z_level_flags'
+                     is-array='true' comment='v0.34.05'/>
         </compound>
-
-        <static-array name='unknown_52d20'
-                      count='2810' type-name='int16_t'/>
-
-        <pointer comment='v0.34.05'/>
 
         <pointer name='world_data' type-name='world_data'/>
 
@@ -676,7 +724,7 @@
 
         <compound name='unk_59dc4'>
             <compound name='regions' type-name='coord2d_path'/>
-            <stl-vector>
+            <stl-vector name='unk1'>
                 <pointer>
                     <compound name='ref' type-name='world_population_ref'/>
                     <stl-vector name='unk'>
@@ -684,16 +732,24 @@
                     </stl-vector>
                 </pointer>
             </stl-vector>
-            <static-array type-name='int16_t' count='32'/>
-            <int32_t/>
-            <int32_t/>
-            <int32_t/>
-            <stl-vector type-name='int16_t'/>
-            <stl-vector type-name='int16_t'/>
-            <stl-vector type-name='int16_t'/>
-            <stl-vector type-name='int16_t'/>
-            <stl-vector type-name='int32_t'/>
-            <df-flagarray name='unk_59e70'/>
+        </compound>
+
+        <compound name='flow_engine'>
+            <int8_t name='rnd_16'/>
+            <int16_t name='rnd_256'/>
+            <int16_t name='rnd_pos'/>
+            <static-array name='rnd_x' type-name='int16_t' count='16'/>
+            <static-array name='rnd_y' type-name='int16_t' count='16'/>
+
+            <int32_t name='block_idx' refers-to='$$._global.map.map_blocks[$]'/>
+
+            <stl-vector name='unk7a' type-name='int16_t'/>
+            <stl-vector name='unk7b' type-name='int16_t'/>
+            <stl-vector name='unk7c' type-name='int16_t'/>
+            <stl-vector name='unk7_cntdn' type-name='int16_t'/>
+
+            <stl-vector name='unk8' type-name='int32_t'/>
+            <df-flagarray name='flags'/>
         </compound>
 
         <int32_t name='unk_59e78'/>
@@ -814,7 +870,7 @@
             <pointer type-name='entity_population'/>
         </stl-vector>
 
-        <int32_t name="unk_5e7a0"/>
+        <bool name="reindex_pathfinding" comment='forces map_block.passable to be recomputed'/>
 
         <int32_t name='frame_counter' comment='increases by 1 every time . is pressed'/>
 
@@ -872,6 +928,8 @@
             </stl-vector>
 
             <int32_t name='type' refers-to='$$._parent.caste[$].ref-target'/>
+
+            <stl-string comment='v0.34.08'/>
 
             <static-array name='item_types' count='105' comment='true array'>
                 <stl-vector>

@@ -61,15 +61,14 @@
     </struct-type>
 
     <enum-type type-name='stockpile_category' base-type='int16_t'>
+        <enum-item name='Remove' value='-1'/>
         <enum-item name='Animals'/>
         <enum-item name='Food'/>
         <enum-item name='Furniture'/>
         <enum-item name='Corpses'/>
         <enum-item name='Refuse'/>
         <enum-item name='Stone'/>
-
-        <enum-item name='Unused6'/>
-
+        <enum-item name='Unused6'/> likely corresponds to Ore or Mining
         <enum-item name='Ammo'/>
         <enum-item name='Coins'/>
         <enum-item name='Bars'/>
@@ -80,7 +79,6 @@
         <enum-item name='Wood'/>
         <enum-item name='Weapons'/>
         <enum-item name='Armor'/>
-
         <enum-item name='Custom'/>
     </enum-type>
 
@@ -241,8 +239,93 @@
             <bool name='unusable'/>
         </compound>
 
-        <bool name='allow_organic'/>
-        <bool name='allow_inorganic'/>
+        <bool name='allow_organic' init-value='true'/>
+        <bool name='allow_inorganic' init-value='true'/>
+    </struct-type>
+
+    <struct-type type-name='hauling_route'
+                 instance-vector='$global.ui.hauling.routes' key-field='id'>
+        <int32_t name='id'/>
+        <stl-string name="name"/>
+        <stl-vector name="stops">
+            <pointer type-name='hauling_stop'/>
+        </stl-vector>
+        <stl-vector name="vehicle_ids">
+            <int32_t ref-target='vehicle'/>
+        </stl-vector>
+        <stl-vector name="vehicle_stops">
+            <int32_t refers-to='$$._global.stops[$]'/>
+        </stl-vector>
+    </struct-type>
+
+    <struct-type type-name='hauling_stop' key-field='id'>
+        <int32_t name='id'/>
+        <stl-string name='name'/>
+        <compound name='pos' type-name='coord'/>
+
+        <compound name='settings' type-name='stockpile_settings'/>
+
+        <stl-vector name='conditions'>
+            <pointer type-name='stop_depart_condition'/>
+        </stl-vector>
+        <stl-vector name='stockpiles'>
+            <pointer type-name='route_stockpile_link'/>
+        </stl-vector>
+
+        <int32_t name='time_waiting'/>
+        <int32_t name='cart_id' ref-target='item'/>
+    </struct-type>
+
+    <struct-type type-name='stop_depart_condition'>
+        <int32_t name='timeout'/>
+        <enum base-type='int32_t' name='direction'>
+            <enum-item name='North'/>
+            <enum-item name='South'/>
+            <enum-item name='East'/>
+            <enum-item name='West'/>
+        </enum>
+        <enum base-type='int32_t' name='mode'>
+            <enum-item name='Push'/>
+            <enum-item name='Ride'/>
+            <enum-item name='Guide'/>
+        </enum>
+        <int32_t name='load_percent'
+                 comment='broken display unless 0, 50 or 100'/>
+        <bitfield name='flags'>
+            <flag-bit name='at_most'/>
+            <flag-bit name='desired'/>
+        </bitfield>
+        <compound name='guide_path' type-name='coord_path'
+                  comment='initialized on first run, and saved'/>
+    </struct-type>
+
+    <struct-type type-name='route_stockpile_link'>
+        <int32_t name='building_id' ref-target='building'/>
+        <bitfield name='mode'>
+            <flag-bit name='take'/>
+            <flag-bit name='give'/>
+        </bitfield>
+    </struct-type>
+
+    <struct-type type-name='vehicle'
+                 instance-vector='$global.world.vehicles.all' key-field='id'>
+        <int32_t name='id'/>
+        <int32_t name='item_id' ref-target='item'/>
+
+        -- Position within tile
+        <int32_t name='offset_x' comment='-50000..50000'/>
+        <int32_t name='offset_y'/>
+        <int32_t name='offset_z'/>
+
+        <int32_t name='speed_x'/>
+        <int32_t name='speed_y'/>
+        <int32_t name='speed_z'/>
+
+        <padding size='16' comment='0'/>
+        <int32_t name='route_id' ref-target='hauling_route'/>
+        <compound name='pos' type-name='coord'/>
+
+        <int32_t name='time_stopped' comment='frames, up to 1000'/>
     </struct-type>
 </data-definition>
 
