@@ -254,8 +254,10 @@ def struct_t(e):
                         raise Error(pformat((vmp.tag, vmp.attrib, vmp[0].tag, vmp[0].attrib, unused)))
                 else:
                     raise Error(pformat((vmp.tag, vmp.attrib, vmp[0].tag, vmp[0].attrib)))
+            elif vmp.tag == 'enum':
+                params.append(vmp.get('base-type'))
             else:
-                raise Error(pformat(e.tag, e.attrib, vmp.tag, vmp.attrib))
+                raise Error(pformat((e.tag, e.attrib, vmp.tag, vmp.attrib)))
                 
         return "virtual {rettype_t} {name}({params});".format(
             rettype_t = rettype_t,
@@ -441,7 +443,7 @@ class xD(object):
         };    
         """).splitlines(True)
     
-    def __init__(self, version='v0.34.07 linux', prefix=''):
+    def __init__(self, version='v0.34.10 linux', prefix=''):
         self.woot = etree.Element('data-definition')
         self._p = etree.XMLParser(remove_blank_text = True)
         self._version = version
@@ -533,7 +535,10 @@ class xD(object):
             xpa = "symbol-table[@name='{version}']/global-address[@name='{global_name}']".format(
                 version = self._version, global_name = name)
             el =  etx(xpa)(self.woot)
-            return el[0].get('value')
+            try:
+                return el[0].get('value')
+            except IndexError:
+                return None
 
         gcode = open(ccfname, "w")
         gcode.write(self.hdr_globals_h)
