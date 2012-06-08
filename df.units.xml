@@ -101,7 +101,7 @@
         <flag-bit name='unk6'/>
         <flag-bit name='unk7'/>
 
-        <flag-bit name='unk8' comment='Is set to 1 every tick for non-dead creatures.'/>
+        <flag-bit name='body_temp_in_range' comment='Is set to 1 every tick for non-dead creatures.'/>
         <flag-bit name='wait_until_reveal' comment='Blocks all kind of things until tile is revealed.'/>
         <flag-bit name='scuttle'>
             <comment>
@@ -304,8 +304,8 @@
         <compound name='military'>
             <int32_t name='squad_index' ref-target='squad'/>
             <int32_t name='squad_position'/>
-            <int32_t name='unk_170'/>
-            <int32_t name='draft_timer'/>
+            <int32_t name='patrol_cooldown'/>
+            <int32_t name='patrol_timer'/>
 
             <int16_t name='cur_uniform'/>
 
@@ -425,9 +425,10 @@
         <compound name='body'>
             <compound name='components' type-name='body_component_info'/>
 
-            <stl-vector name='wounds' type-name='pointer'/>
-
-            <uint32_t name='unk_398'/>
+            <stl-vector name='wounds'>
+                <pointer type-name='unit_wound'/>
+            </stl-vector>
+            <int32_t name='wound_next_id'/>
 
             <static-array name='unk_39c' type-name='int32_t' count='10'/>
 
@@ -547,10 +548,11 @@
             <uint32_t name='thirst_timer'/>
             <uint32_t name='sleepiness_timer'/>
 
-            <uint32_t name='unk_58c'/> // counter, decrement to 0
-            <uint32_t name='unk_590'/> // same as 58c
-            <uint32_t name='unk_594'/>
-            <uint32_t name='unk_cntdn_598'/> // fluctuate
+            <uint32_t name='stomach_content'/>
+            <uint32_t name='stomach_food'/>
+            <uint32_t name='vomit_timeout' comment='blocks nausea causing vomit'/>
+
+            <uint32_t name='stored_fat' comment='hunger leads to death only when 0'/>
             <uint32_t name='unk_59c'/>
         </compound>
 
@@ -664,8 +666,15 @@
         <compound name='unknown7'>
             <stl-vector name='unk_7c4'/>
             <stl-vector comment='v0.34.01'/>
-            <stl-vector type-name='pointer' comment='v0.34.01'/>
-            <stl-vector name='unk_7d4' type-name='int32_t'/>
+        </compound>
+
+        <compound name='syndromes'>
+            <stl-vector name='active'>
+                <pointer type-name='unit_syndrome'/>
+            </stl-vector>
+            <stl-vector name='unk_7d4'>
+                <int32_t ref-target='syndrome'/>
+            </stl-vector>
             <stl-vector name='unk_7e4' type-name='int16_t'/>
         </compound>
 
@@ -720,8 +729,8 @@
             <stl-vector name='body_part_888' type-name='uint8_t'/>
             <stl-vector name='body_part_898' type-name='uint32_t'/>
             <stl-vector name='body_part_8a8' type-name='uint8_t'/>
-            <stl-vector name='body_part_8b8' type-name='uint16_t'/>
-            <stl-vector name='body_part_8c8' type-name='uint16_t'/>
+            <stl-vector name='body_part_base_ins' type-name='uint16_t'/>
+            <stl-vector name='body_part_clothing_ins' type-name='uint16_t'/>
             <stl-vector name='body_part_8d8' type-name='uint16_t'/>
 
             <stl-vector name='unk_8e8'/> // items ids?
@@ -795,81 +804,182 @@
         <int16_t name="mat_type" ref-target='material' aux-value='$$.mat_index'/>
         <int32_t name="mat_index" init-value='-1'/>
 
-        <int16_t name="unk_8"/>
-        <int16_t name="unk_a"/>
-        <int16_t name="unk_c"/>
+        <enum type-name='matter_state' base-type='int16_t' name='mat_state'/>
+        <uint16_t name='temperature'/>
+        <uint16_t name='temperature_fraction'/>
 
-        <int32_t name="unk_10"/>
+        <int32_t name="size"/>
         <int16_t name='body_part_id'
                  refers-to='$$._global._parent._global.body.body_plan.body_parts[$]'/>
         <int16_t name="unk_16"/>
     </struct-type>
 
     <struct-type type-name='unit_attribute'>
-        <int32_t name='unk1'/>
-        <int32_t name='unk2'/>
-        <int32_t name='unk3'/>
-        <int32_t name='unk4'/>
-        <int32_t name='unk5'/>
-        <int32_t name='unk6'/>
-        <int32_t name='unk7'/>
+        <int32_t name='value' comment='effective = value - soft_demotion'/>
+        <int32_t name='max_value'/>
+        <int32_t name='improve_counter'
+                 comment='counts to PHYS_ATT_RATES improve cost; then value++'/>
+        <int32_t name='unused_counter'
+                 comment='counts to PHYS_ATT_RATES unused rate; then rust_counter++'/>
+        <int32_t name='soft_demotion'
+                 comment='0-100; when not 0 blocks improve_counter'/>
+        <int32_t name='rust_counter'
+                 comment='counts to PHYS_ATT_RATES rust; then demotion_counter++'/>
+        <int32_t name='demotion_counter'
+                 comment='counts to PHYS_ATT_RATES demotion; then value--; soft_demotion++'/>
     </struct-type>
 
+    <struct-type type-name='unit_syndrome'>
+        <int32_t name='type' ref-target='syndrome'/>
+        <int32_t name='year'/>
+        <int32_t name='year_time'/>
+        <int32_t name='ticks'/>
+        <stl-vector type-name='int32_t'/>
+        <int32_t name='unk1'/>
+        <stl-vector name='symptoms'>
+            <pointer>
+                <int32_t name='unk1'/>
+                <int32_t name='unk2'/>
+                <int32_t name='ticks'/>
+                <stl-vector name='target_bp' type-name='int16_t'/>
+                <stl-vector name='target_layer' type-name='int16_t'/>
+                <stl-vector name='target_unk1' type-name='int32_t'/>
+                <stl-vector name='target_unk2' type-name='int32_t'/>
+                <stl-vector name='target_ticks' type-name='int32_t'/>
+                <uint32_t name='flags'/>
+            </pointer>
+        </stl-vector>
+        <int16_t name='unk2'/>
+        <int32_t name='unk3'/>
+        <stl-vector name='unk4' type-name='int32_t'/>
+    </struct-type>
+
+    <struct-type type-name='unit_wound' key-field='id'>
+        <int32_t name="id"/>
+        <stl-vector name="parts">
+            <pointer>
+                <int32_t name="unk_0"/>
+                <int16_t name="body_part_id"/>
+                <int16_t name="layer_idx"/>
+                <int32_t name="unk_8"/>
+                <int16_t name="unk_c"/>
+                <int32_t name="unk_10"/>
+                <stl-vector name="unk_14" type-name='int16_t'/>
+                <stl-vector name="unk_24" type-name='int16_t'/>
+                <stl-vector name="unk_34" type-name='int16_t'/>
+                <int16_t name="unk_44"/>
+                <int32_t name="unk_48"/>
+                <int32_t name="unk_4c"/>
+                <int32_t name="unk_50"/>
+                <int32_t name="unk_54"/>
+                <int32_t name="unk_58"/>
+                <int32_t name="unk_5c"/>
+                <int32_t name="unk_60"/>
+                <int32_t name="unk_64"/>
+                <int32_t name="unk_68"/>
+                <int32_t name="unk_6c"/>
+                <int16_t name="unk_70"/>
+                <int16_t name="unk_72"/>
+                <int32_t name="unk_74"/>
+            </pointer>
+        </stl-vector>
+        <int32_t name="unk_14"/>
+        <int32_t name="unk_18"/>
+        <int32_t name="unk_1c"/>
+        <int32_t name="unk_20"/>
+        <int32_t name="unk_24"/>
+        <int32_t name="unk_28"/>
+        <int32_t name="unk_2c"/>
+        <int32_t name="unk_30"/>
+        <int32_t name="unk_34"/>
+        <int32_t name="unk_38"/>
+        <int32_t name="unk_3c"/>
+        <pointer name="unk_40"/>
+    </struct-type>
+
+    <enum-type base-type='int16_t' type-name='misc_trait_type'>
+        <enum-attr name='tag'/>
+
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item name='Migrant'/>
+        <enum-item name='RoomComplaint'/>
+        <enum-item name='UnnamedResident' comment='upon reaching zero, resident creature gets named'/>
+        <enum-item/>
+        <enum-item name='ClaimTrinketCooldown'/>
+        <enum-item name='ClaimClothingCooldown'/>
+        <enum-item name='WantsDrink'>
+            <item-attr name='tag' value='ALCOHOLIC'/>
+        </enum-item>
+        <enum-item name='LikesOutdoors'>
+            <item-attr name='tag' value='MOUNTAIN'/>
+        </enum-item>
+        <enum-item name='Hardened'>
+            <item-attr name='tag' value='COMBATHARDNESS'/>
+        </enum-item>
+        <enum-item name='TimeSinceBreak'>
+            <item-attr name='tag' value='TIME_SINCE_BREAK'/>
+        </enum-item>
+        <enum-item name='OnBreak'>
+            <item-attr name='tag' value='ON_BREAK'/>
+        </enum-item>
+        <enum-item/>
+        <enum-item name='CaveAdapt'>
+            <item-attr name='tag' value='CAVE_ADAPT'/>
+        </enum-item>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item name='PartiedOut'>
+            <item-attr name='tag' value='PARTIED_OUT'/>
+        </enum-item>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item name='MilkCounter'>
+            <item-attr name='tag' value='MILK_COUNTER'/>
+        </enum-item>
+        <enum-item/>
+        <enum-item/>
+        <enum-item name='EggSpent'>
+            <item-attr name='tag' value='EGG_SPENT'/>
+        </enum-item>
+        <enum-item name='GroundedAnimalAnger'>
+            <item-attr name='tag' value='GROUNDED_ANIMAL_ANGER'/>
+        </enum-item>
+        <enum-item/>
+        <enum-item name='TimeSinceSuckedBlood'>
+            <item-attr name='tag' value='TIME_SINCE_SUCKED_BLOOD'/>
+        </enum-item>
+        <enum-item name='DrinkingBlood'>
+            <item-attr name='tag' value='DRINKING_BLOOD'/>
+        </enum-item>
+    </enum-type>
+
     <struct-type type-name='unit_misc_trait'>
-        <enum base-type='int16_t' name='id'>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item name='Migrant'/>
-            <enum-item name='RoomComplaint'/>
-            <enum-item name='UnnamedResident' comment='upon reaching zero, resident creature gets named'/>
-            <enum-item/>
-            <enum-item name='ClaimTrinketCooldown'/>
-            <enum-item name='ClaimClothingCooldown'/>
-            <enum-item name='WantsDrink' comment='ALCOHOLIC'/>
-            <enum-item name='LikesOutdoors' comment='MOUNTAIN'/>
-            <enum-item name='Hardened' comment='COMBATHARDNESS'/>
-            <enum-item name='TimeSinceBreak' comment='TIME_SINCE_BREAK'/>
-            <enum-item name='OnBreak' comment='ON_BREAK'/>
-            <enum-item/>
-            <enum-item name='CaveAdapt' comment='CAVE_ADAPT'/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item name='PartiedOut' comment='PARTIED_OUT'/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item name='MilkCounter' comment='MILK_COUNTER'/>
-            <enum-item/>
-            <enum-item/>
-            <enum-item name='EggSpent' comment='EGG_SPENT'/>
-            <enum-item name='GroundedAnimalAnger' comment='GROUNDED_ANIMAL_ANGER'/>
-            <enum-item/>
-            <enum-item name='TimeSinceSuckedBlood' comment='TIME_SINCE_SUCKED_BLOOD'/>
-            <enum-item name='DrinkingBlood' comment='DRINKING_BLOOD'/>
-        </enum>
+        <enum base-type='int16_t' type-name='misc_trait_type' name='id'/>
 
         <code-helper name='describe'>(fmt "id=~A value=~A" $.id $.value)</code-helper>
 

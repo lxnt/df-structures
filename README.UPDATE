@@ -65,14 +65,17 @@ STAGE 3. Linux primitive globals
     look at values in bss, there will be cur_year_tick, and
     cur_year is 32 bytes before that.
 
-  2. process_dig
+  2. process_jobs
+
+    Designate a building for construction.
+    Look after process_dig for an enabled boolean.
+
+  3. process_dig
 
     Step the game one step. Designate a tile for digging.
-    Look after cur_year for an enabled boolean.
+    Look after cur_year and before process_jobs.
 
-  3. process_jobs
-
-    Designate a building for construction. Look after process_dig.
+    Note: this order because designating sometimes sets process_jobs too.
 
   4. job_next_id / ui_workshop_job_cursor
 
@@ -97,6 +100,8 @@ STAGE 3. Linux primitive globals
   7. current_weather
 
     Subtract 0x1c from cur_year address. Obviously, a big hack.
+
+    It is best to use a save where the contents are non-zero and known to you.
 
 [B] The ui_look_cursor area.
 
@@ -138,6 +143,12 @@ STAGE 3. Linux primitive globals
     Shift-RightDown; + 10; done
 
     Finds cursor and two variables in bss. Z is just after them.
+
+[D] Random positions.
+
+  1. announcements
+
+    Immediately follows d_init; starts 25 25 31 31 24 ...
 
 
 STAGE 4. Primary windows compound globals
@@ -200,26 +211,42 @@ STAGE 5. Secondary windows compound globals
 
     Look for a pointer vector around -0x54 before ui.
 
-  2a. ui_building_assign_units
-
-    Start assigning units to a pasture, backtrack from one of the units.
-
-    The vector is expected to be immediately before world.
-
-  2b. ui_building_assign_is_marked
+  2a. ui_building_assign_is_marked
 
     Assign to zone, (find-changes), toggle 1st unit, enter; toggle 1st,
     0; toggle 1st, 1; toggle 2nd, new; done
 
     The vector is expected to be just before ui.
 
-  2c. ui_building_assign_items
+  2b. ui_building_assign_items
 
     Expected to be immediately before ui_building_assign_is_marked.
+
+  2c. ui_building_assign_units
+
+    Start assigning units to a pasture, backtrack from one of the units.
+
+    The vector is expected to be immediately before world.
 
   2d. ui_building_assign_type
 
     The vector is expected to be 2nd vector immediately after ui_look_list.
+
+  3. gview
+
+    Immediately follows ui.
+
+  4a. d_init
+
+    Follows world after a small gap (starts with flagarray).
+
+  4b. init
+
+    Follows ui_build_selector after a small gap.
+
+  5. gps
+
+    Look at around offset ui_area_map_width+0x470 for pointers.
 
 
 STAGE 6. Windows primitive globals
@@ -270,6 +297,10 @@ STAGE 6. Windows primitive globals
   4. ui_unit_view_mode
 
     Look just before hist_event_collection_next_id.
+
+  5. announcements
+
+    Immediately follows d_init; starts 25 25 31 31 24 ...
 
 
 STAGE 7. Verify objects

@@ -719,6 +719,29 @@
         <stl-vector name="possible" type-name='uint8_t' comment='1 cook, 2 brew'/>
     </class-type>
 
+    <class-type type-name='viewscreen_layer_stockpilest'
+                inherits-from='viewscreen_layerst'>
+        <pointer name="settings" type-name='stockpile_settings'/>
+        <enum name="cur_group"  type-name='stockpile_list' base-type='int32_t'/>
+        <enum name="cur_list"  type-name='stockpile_list' base-type='int32_t'/>
+        <stl-vector name="group_ids">
+            <enum type-name='stockpile_list' base-type='int32_t'/>
+        </stl-vector>
+        <stl-vector name="group_bits">
+            <compound type-name='stockpile_group_set'/>
+        </stl-vector>
+        <stl-vector name="list_ids">
+            <enum type-name='stockpile_list' base-type='int32_t'/>
+        </stl-vector>
+        <stl-vector name="item_names">
+            <pointer type-name='stl-string'/>
+        </stl-vector>
+        <stl-vector name="item_status">
+            <pointer type-name='bool'/>
+        </stl-vector>
+        <stl-string name="title"/>
+    </class-type>
+
     <class-type type-name='viewscreen_dungeonmodest' inherits-from='viewscreen'>
         <int32_t name="x"/>
         <int32_t name="y"/>

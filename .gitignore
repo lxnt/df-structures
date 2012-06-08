@@ -1,5 +1,9 @@
 codegen/*
 __pycache__/*
+*/nextid.txt
+*/vtables.txt
+*/all-vmethods.txt
+*/vtables-ext.txt
 *~
 sbcl-runtime
 cl-linux-debug

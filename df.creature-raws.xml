@@ -174,7 +174,7 @@
         <enum-item name='NO_DIZZINESS'/>
 
         <enum-item name='NO_FEVERS'/>
-        <enum-item/>
+        <enum-item name='NO_PROFESSION_COLOR' comment='guessed from use'/>
         <enum-item/>
         <enum-item/>
         <enum-item name='AMBUSHPREDATOR'/>
@@ -272,7 +272,7 @@
         <enum-item/>
         <enum-item/>
 
-        <enum-item/>
+        <enum-item name='CASTE_COLOR'/>
         <enum-item/>
         <enum-item/>
         <enum-item name='FEATURE_BEAST'/>
@@ -312,6 +312,45 @@
         <enum-item name='CRAZED'/>
     </enum-type>
 
+    <enum-type type-name='body_part_raw_flags'>
+        <enum-item name='HEAD'/>
+        <enum-item name='UPPERBODY'/>
+        <enum-item name='LOWERBODY'/>
+        <enum-item name='SIGHT'/>
+        <enum-item name='EMBEDDED'/>
+        <enum-item name='INTERNAL'/>
+        <enum-item name='CIRCULATION'/>
+        <enum-item name='SKELETON'/>
+
+        <enum-item name='LIMB'/>
+        <enum-item name='GRASP'/>
+        <enum-item name='STANCE'/>
+        <enum-item name='GUTS'/>
+        <enum-item name='BREATHE'/>
+        <enum-item name='SMALL'/>
+        <enum-item name='THROAT'/>
+        <enum-item name='JOINT'/>
+
+        <enum-item name='THOUGHT'/>
+        <enum-item name='NERVOUS'/>
+        <enum-item name='RIGHT'/>
+        <enum-item name='LEFT'/>
+        <enum-item name='HEAR'/>
+        <enum-item name='SMELL'/>
+        <enum-item name='FLIER'/>
+        <enum-item name='DIGIT'/>
+
+        <enum-item name='MOUTH'/>
+        <enum-item name='APERTURE'/>
+        <enum-item name='SOCKET'/>
+        <enum-item name='TOTEMABLE'/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item name='UNDER_PRESSURE'/>
+        <enum-item/>
+        <enum-item name='VERMIN_BUTCHER_ITEM'/>
+        <enum-item name='CONNECTOR'/>
+    </enum-type>
 
     <struct-type type-name='body_part_layer_raw'>
         <stl-string name='layer_name'/>
@@ -344,14 +383,14 @@
     </struct-type>
 
     <struct-type type-name='body_part_raw'>
-        <stl-string name='part_code'/>
-        <stl-string name='part_name'/>
+        <stl-string name='token'/>
+        <stl-string name='category'/>
 
-        <code-helper name='describe'>$.part_name</code-helper>
+        <code-helper name='describe'>$.token</code-helper>
 
         <int16_t name='con_part_id'/>
 
-        <df-flagarray name='flags'/>
+        <df-flagarray name='flags' index-enum='body_part_raw_flags'/>
 
         <stl-vector name='layers'>
             <pointer type-name='body_part_layer_raw'/>
@@ -389,8 +428,9 @@
 
         <int32_t name='unused'/>
 
-        <int32_t name='unk11'/>
-        <int16_t name='unk12'/>
+        <int16_t name='insulation_muscle'/>
+        <int16_t name='insulation_fat'/>
+        <int16_t name='insulation_base'/>
 
         <int32_t name='clothing_item_id' init-value='-1' comment='v0.34.06'/>
     </struct-type>
