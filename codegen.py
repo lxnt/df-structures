@@ -443,7 +443,7 @@ class xD(object):
         };    
         """).splitlines(True)
     
-    def __init__(self, version='v0.34.10 linux', prefix=''):
+    def __init__(self, version='v0.34.11 linux', prefix=''):
         self.woot = etree.Element('data-definition')
         self._p = etree.XMLParser(remove_blank_text = True)
         self._version = version
