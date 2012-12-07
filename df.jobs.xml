@@ -40,6 +40,7 @@
         <flag-bit name='sand'/>
         <flag-bit name='glass'/>
         <flag-bit name='clay'/>
+        <flag-bit name='milk'/>
     </bitfield-type>
 
     <struct-type type-name='job_list_link'>
@@ -68,9 +69,9 @@
         <flag-bit/>
         <flag-bit name='by_manager'/>
         <flag-bit name='store_item'/>
-        <flag-bit/>
-        <flag-bit/>
-        <flag-bit/>
+        <flag-bit name='quality' count='3' comment='set by improvement code'/>
+        <flag-bit name='specific_dropoff'
+                  comment='for some jobs, blocks auto-restockpiling of the hauled item'/>
     </bitfield-type>
 
     <struct-type type-name='job' key-field='id'>
@@ -85,8 +86,7 @@
 
         <int32_t name='completion_timer' init-value='-1' comment='-1 per 10 frames'/>
 
-        <uint16_t name='unk4a'/>
-        <uint16_t name='unk4b'/>
+        <uint32_t name='unk4' comment='garbage, but serialized'/>
 
         <compound name='flags' type-name='job_flags'/>
 
@@ -94,7 +94,7 @@
         <int32_t name='mat_index' init-value='-1'/>
         <int16_t name='unk5' init-value='-1'/>
         <int16_t name='unk6' init-value='-1'/>
-        <int16_t name='item_subtype' init-value='-1'/>
+        <int16_t name='item_subtype' init-value='-1' comment='for StoreInStockpile: hauler_type'/>
 
         <compound name="item_category" type-name='stockpile_group_set'/>
         <int32_t name="hist_figure_id" ref-target='historical_figure'/>
@@ -102,8 +102,8 @@
 
         <stl-string name='reaction_name'/>
 
-        <int32_t name='unk9'/>
-        <int16_t name='unk10a'/>
+        <int32_t name='expire_timer' comment='for stockpiling, +1 per 50 ticks if no worker; del when 20'/>
+        <int16_t name='recheck_cntdn' comment='for process_jobs'/>
         <int16_t name='unk10b_cntdn'/>
         <int32_t name='unk11' init-value='-1' comment='v0.34.08'/>
 
@@ -114,7 +114,7 @@
         <stl-vector name='specific_refs'>
             <pointer type-name='specific_ref'/>
         </stl-vector>
-        <stl-vector name='references'>
+        <stl-vector name='general_refs'>
             <pointer type-name='general_ref'/>
         </stl-vector>
 
@@ -133,10 +133,12 @@
             <enum-item/>
             <enum-item name='Reagent'/>
             <enum-item name='Hauled'/>
-            <enum-item/>
-            <enum-item/>
+            <enum-item name='LinkToTarget'/>   used when linking a lever to a building, not sure if swapped
+            <enum-item name='LinkToTrigger'/>
             <enum-item/>
             <enum-item name='TargetContainer'/>
+            <enum-item/>
+            <enum-item name='PushHaulVehicle'/>     wheelbarrow
         </enum>
         <int32_t name='is_fetching'
                  comment='0 immediately once taken to be brought'/>
@@ -240,7 +242,7 @@
 
         <int32_t name='quantity' init-value='1'/>
         <enum base-type='int16_t' name='vector_id'
-              type-name='job_item_vector_id' init-value='ANY_FREE'/>
+              type-name='job_item_vector_id' init-value='IN_PLAY'/>
 
         <compound name='flags2' type-name='job_item_flags2'/>
         <compound name='flags3' type-name='job_item_flags3'/>

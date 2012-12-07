@@ -8,9 +8,9 @@
     <!--<global-object name="gview" offset="0x8eb06c0" size="1812916">
         <comment>ctor 0x804C79C [_ZN11interfacestC1Ev]; dtor 0x804C51C [_ZN11interfacestD1Ev]</comment>
     </global-object>-->
-    <global-object name="obj_906B074" offset="0x906b074" size="12">
+    <!--<global-object name="flows" offset="0x906b074" size="12">
         <comment>dtor 0x85CF710</comment>
-    </global-object>
+    </global-object>-->
     <!--<global-object name="timed_events" offset="0x906b080" size="2144">
         <comment>dtor 0x85CF6B0</comment>
     </global-object>
@@ -38,7 +38,7 @@
     <global-object name="obj_9662494" offset="0x9662494" size="124">
         <comment>dtor 0x85CFCE0</comment>
     </global-object>
-    <global-object name="obj_9662510" offset="0x9662510" size="16">
+    <!--<global-object name="obj_9662510" offset="0x9662510" size="16">
         <comment>dtor 0x85CFCE0</comment>
     </global-object>
     <global-object name="obj_9662520" offset="0x9662520" size="16">
@@ -52,7 +52,7 @@
     </global-object>
     <global-object name="obj_9662550" offset="0x9662550" size="16">
         <comment>dtor 0x85CFD70</comment>
-    </global-object>
+    </global-object>-->
     <!--<global-object name="ui" offset="0x9662560" size="28448">
         <comment>ctor 0x87DB0A0; dtor 0x85DEA70</comment>
     </global-object>
@@ -68,9 +68,9 @@
     <global-object name="cursor_unit_list" offset="0x97fe400" size="65600">
         <comment>dtor 0x85CFB40</comment>
     </global-object>-->
-    <global-object name="obj_980E440" offset="0x980e440" size="64">
+    <!--<global-object name="texture" offset="0x980e440" size="64">
         <comment>dtor 0x85D4510</comment>
-    </global-object>
+    </global-object>-->
     <!--<global-object name="init" offset="0x980e480" size="4256">
         <comment>ctor 0x804BE2C [_Znaj]; ctor 0x804BE2C [_Znaj]; ctor 0x804BE2C [_Znaj]; ctor 0x804C48C [_ZN14init_displaystC1Ev]; dtor 0x85CF860</comment>
     </global-object>

@@ -57,10 +57,19 @@
 (defun suspend ()
   (call-debug-task 'stop-all-threads *process*))
 
-(defun find-str (string &key any-prefix? any-suffix?)
+(defun find-stl-str (string &key any-prefix? any-suffix?)
   (browse (find-stl-strings *memory* string
                             :any-prefix? any-prefix?
                             :any-suffix? any-suffix?)))
+
+(defun find-mem-str (string &key at-end? (heap? t) rodata?)
+  (browse (find-memory-strings *memory* string :at-end? at-end? :heap? heap? :rodata? rodata?)))
+
+(defun find-stl-vec (min-size max-size &key (eltsize 4) heap?)
+  (browse (find-stl-vectors *memory* min-size max-size :eltsize eltsize :heap? heap?)))
+
+(defun find-vtable-obj (obj-name)
+  (browse (find-obj-by-vtable *memory* obj-name)))
 
 (load "version.lisp")
 
@@ -90,16 +99,18 @@
 
 (load "disasm.lisp")
 
-(defun reset-state-annotation (&key mark-substructs?)
+(defun reset-state-annotation (&key mark-substructs? only-unset?)
   (annotate-all *memory* :status :unchecked
-                :filter @$(if mark-substructs?
-                              (and (typep $ '(or struct-compound-item enum-field))
-                                   (or (name-of $) (is-contained-item? $)))
-                              (or (and (typep $ 'enum-field)
-                                       (or (name-of $) (is-contained-item? $)))
-                                  (and (typep $ 'struct-compound-item)
-                                       (is-contained-item? $))
-                                  (typep $ 'global-type-definition)))
+                :filter @$(and (if mark-substructs?
+                                   (and (typep $ '(or struct-compound-item enum-field))
+                                        (or (name-of $) (is-contained-item? $)))
+                                   (or (and (typep $ 'enum-field)
+                                            (or (name-of $) (is-contained-item? $)))
+                                       (and (typep $ 'struct-compound-item)
+                                            (is-contained-item? $))
+                                       (typep $ 'global-type-definition)))
+                               (or (not only-unset?)
+                                   (null (type-annotation $ :status))))
                 :namespace nil)
   (save-annotations))
 

@@ -103,6 +103,7 @@
             <item-attr name='type' value='Gathering'/>
             <item-attr name='skill' value='WEAVING'/>
             <item-attr name='item' value='THREAD'/>
+            <item-attr name='material' value='silk'/>
         </enum-item>
         <enum-item name='BringItemToDepot'>
             <item-attr name='caption' value='Bring Item to Depot'/>
@@ -494,6 +495,7 @@
             <item-attr name='caption' value='Melt a Metal Object'/>
             <item-attr name='type' value='Manufacture'/>
             <item-attr name='item' value='BAR'/>
+            <item-attr name='material' value='metal'/>
             <item-attr name='skill' value='SMELT'/>
         </enum-item>
         <enum-item name='ExtractMetalStrands'>
@@ -600,6 +602,7 @@
             <item-attr name='caption' value='Milk Creature'/>
             <item-attr name='type' value='Gathering'/>
             <item-attr name='item' value='LIQUID_MISC'/>
+            <item-attr name='material' value='milk'/>
             <item-attr name='skill' value='MILK'/>
         </enum-item>
 
@@ -850,19 +853,19 @@
         <enum-item name='ExtractFromPlants'>
             <item-attr name='caption' value='Extract from Plants'/>
             <item-attr name='type' value='Manufacture'/>
-            <item-attr name='possible_item' value='LIQUID_MISC'/>
-            <item-attr name='skill' value='BREWING'/>
+            <item-attr name='item' value='LIQUID_MISC'/>
+            <item-attr name='skill' value='HERBALISM'/>
         </enum-item>
         <enum-item name='ExtractFromRawFish'>
             <item-attr name='caption' value='Extract from Raw Fish'/>
             <item-attr name='type' value='Manufacture'/>
-            <item-attr name='possible_item' value='LIQUID_MISC'/>
+            <item-attr name='item' value='LIQUID_MISC'/>
             <item-attr name='skill' value='DISSECT_FISH'/>
         </enum-item>
         <enum-item name='ExtractFromLandAnimal'>
             <item-attr name='caption' value='Extract from Land Animal'/>
             <item-attr name='type' value='Manufacture'/>
-            <item-attr name='possible_item' value='LIQUID_MISC'/>
+            <item-attr name='item' value='LIQUID_MISC'/>
             <item-attr name='skill' value='DISSECT_VERMIN'/>
         </enum-item>
         <enum-item name='TameVermin'>
@@ -1173,6 +1176,7 @@
             <item-attr name='caption' value='Shear Creature'/>
             <item-attr name='type' value='Gathering'/>
             <item-attr name='item' value='CORPSEPIECE'/>
+            <item-attr name='material' value='yarn'/>
             <item-attr name='skill' value='SHEARING'/>
         </enum-item>
         <enum-item name='SpinThread'>

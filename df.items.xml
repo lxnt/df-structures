@@ -24,7 +24,7 @@
 
         <flag-bit name='owned' comment='Item is owned by a dwarf'/>
         <flag-bit name='garbage_collect' comment='Marked for deallocation by DF it seems'/>
-        <flag-bit name='artifact1' comment='Artifact ?'/>
+        <flag-bit name='artifact' comment='Artifact'/>
         <flag-bit name='forbid' comment='Forbidden item'/>
 
         <flag-bit name='unk6' comment='unknown, unseen'/>
@@ -35,7 +35,7 @@
         <flag-bit name='hidden' comment='Hidden item'/>
         <flag-bit name='in_chest' comment='Stored in chest/part of well?'/>
         <flag-bit name='unk7' comment='unknown, unseen'/>
-        <flag-bit name='artifact2' comment='Artifact ?'/>
+        <flag-bit name='artifact_mood' comment='created by mood/named existing item'/>
 
         <flag-bit name='temps_computed' comment='melting/boiling/ignite/etc. points'/>
         <flag-bit name='weight_computed'/>
@@ -54,15 +54,21 @@
         <int32_t name='flags' comment='1=does not show up in item description or alter item value'/>
     </struct-type>
 
+    <struct-type type-name='temperaturest'> seems like a convenient name
+        <uint16_t name='whole' init-value='10050'/>
+        <int16_t name='fraction'/>
+    </struct-type>
+
     <struct-type type-name='contaminant'>
         <int16_t name='mat_type' ref-target='material' aux-value='$$.mat_index'/>
         <int32_t name='mat_index'/>
         <enum type-name='matter_state' base-type='int16_t' name='mat_state'/>
-        <uint16_t name='temperature'/>
-        <uint16_t name='temperature_fraction'/>
+        <compound name='temperature' type-name='temperaturest'/>
         <int32_t name='size' comment='1-24=spatter, 25-49=smear, 50-* = coating'/>
-        <int16_t name='unk' comment='-1'/>
-        <uint16_t name='flags'/>
+        <int16_t name='body_part_id' init-value='-1'/>
+        <bitfield base-type='uint16_t' name='flags'>
+            <flag-bit name='water_soluble'/>
+        </bitfield>
     </struct-type>
 
     <enum-type type-name='item_quality' base-type='int16_t'>
@@ -119,28 +125,26 @@
         <stl-vector name='specific_refs'>
             <pointer type-name='specific_ref'/>
         </stl-vector>
-        <stl-vector name='itemrefs'>
+        <stl-vector name='general_refs'>
             <pointer type-name='general_ref'/>
         </stl-vector>
 
         <int32_t name='world_data_id' init-value='-1' comment='v0.34.01'/>
         <int32_t name='world_data_subid' init-value='-1' comment='v0.34.01'/>
 
-        <compound name='temp'>
-            <int8_t name='unk1a'/>
-            <int8_t name='unk1b'/>
-            <int16_t name='unk2'/>
-            <int16_t name='unk3'/>
-            <int16_t name='unk4'/>
-            <int16_t name='unk5'/>
-            <int16_t name='spec_heat'/>
-            <int16_t name='ignite_point'/>
-            <int16_t name='heatdam_point'/>
-            <int16_t name='colddam_point'/>
-            <int16_t name='boiling_point'/>
-            <int16_t name='melting_point'/>
-            <int16_t name='fixed_temp'/>
-        </compound>
+        <uint8_t name='stockpile_countdown' comment='-1 per 50 frames; then check if needs moving'/>
+        <uint8_t name='stockpile_delay' comment='used to reset countdown; randomly varies'/>
+
+        <int16_t name='unk2'/>
+        <int32_t name='base_uniform_score'/>
+        <int16_t name='walkable_id' comment='from map_block.walkable'/>
+        <uint16_t name='spec_heat'/>
+        <uint16_t name='ignite_point'/>
+        <uint16_t name='heatdam_point'/>
+        <uint16_t name='colddam_point'/>
+        <uint16_t name='boiling_point'/>
+        <uint16_t name='melting_point'/>
+        <uint16_t name='fixed_temp'/>
 
         <int32_t name='weight' comment='if flags.weight_computed'/>
         <int32_t name='weight_fraction' comment='1e-6'/>
@@ -196,8 +200,8 @@
             <vmethod ret-type='bool' name='isSharpStone'/>
             <vmethod ret-type='bool' name='isCrystalGlassable'/>
             <vmethod ret-type='bool' name='isMetalOre'> <int16_t name='matIndex'/> </vmethod>
-            <vmethod/>
-            <vmethod/>
+            <vmethod name='clearLastTempUpdateTS'/>
+            <vmethod name='listNotableKills'> <pointer type-name='stl-string' name='string_ptr'/> </vmethod>
 
             -- 34
 
@@ -228,7 +232,7 @@
             <vmethod ret-type='bool' name='isScrew'/>
             <vmethod ret-type='bool' name='isBuildMat'/>
             <vmethod ret-type='bool' name='isTemperatureSafe'> <int8_t comment='1 fire, 2 magma'/> </vmethod>
-            <vmethod name='setRandSubtype'> <pointer/> </vmethod>
+            <vmethod name='setRandSubtype'> <int32_t name='entity_id'/> </vmethod>
 
             -- 54
 
@@ -258,13 +262,14 @@
             <vmethod/>
             <vmethod/>
             <vmethod/>
-            <vmethod name='setSeedsUnk84'> <int32_t/> </vmethod>
-            <vmethod ret-type='int16_t' name='getCorpseUnk17c'/>
+            <vmethod name='setSeedsPlantSkillLevel'> <int32_t name='level'/> </vmethod>
+            <vmethod ret-type='int16_t' name='getCorpseMuscleAmount'
+                     comment='physical_attr_tissues[STRENGTH]'/>
 
             <vmethod name='ageItem'><int32_t name='amount'/></vmethod>
-            <vmethod ret-type='int32_t' name='getCritterUnk80'/>
-            <vmethod name='setCritterUnk80'> <int32_t/> </vmethod>
-            <vmethod name='incrementCritterUnk80'/>
+            <vmethod ret-type='int32_t' name='getCritterAirdrownTimer'/>
+            <vmethod name='setCritterAirdrownTimer'> <int32_t/> </vmethod>
+            <vmethod name='incrementCritterAirdrownTimer'/>
             <vmethod ret-type='int32_t' name='getRotTimer'/>
 
             -- 74
@@ -281,9 +286,21 @@
             <vmethod ret-type='bool' name='isLiquidPowder'/>
             <vmethod ret-type='bool' name='isLiquid'/>
             <vmethod/>
-            <vmethod/>
-            <vmethod/>
-            <vmethod/>
+            <vmethod ret-type='int32_t' name='getVolume' comment='for putting in containers, building clutter'/>
+            <vmethod name='addImprovementFromJob'>
+                <ret-type><pointer type-name='itemimprovement'/></ret-type>
+                <enum base-type='int32_t' type-name='improvement_type'/>
+                <pointer type-name='job'/>
+                <pointer type-name='unit'/>
+                <int16_t name='mat_type'/>
+                <int32_t name='mat_index'/>
+                <int32_t name='shape' ref-target='descriptor_shape'/>
+                <pointer type-name='historical_entity'/>
+                <pointer type-name='world_site'/>
+                <int16_t name='unk' comment='used to compute quality if !job||!unit'/>
+                <bool name='unshaped' comment='glazed'/>
+            </vmethod>
+            <vmethod ret-type='bool' name='isWeapon'/>
 
             -- 85
 
@@ -296,11 +313,11 @@
             <vmethod ret-type='bool' name='isProcessableBarrel'/>
             <vmethod ret-type='bool' name='isEdiblePlant'/>
             <vmethod ret-type='bool' name='isEdibleRaw'> <int32_t name='hunger'/> </vmethod>
-            <vmethod ret-type='bool' name='isEdibleMeat'>
+            <vmethod ret-type='bool' name='isEdibleCarnivore'>
                 <comment>In item_foodst, requires MEAT or FISH ingredient.</comment>
                 <int32_t name='hunger'/>
             </vmethod>
-            <vmethod ret-type='bool' name='isEdibleCorpse'>
+            <vmethod ret-type='bool' name='isEdibleBonecarn'>
                 <comment>In item_foodst, requires CORPSEPIECE, MEAT or FISH ingredient.</comment>
                 <int32_t name='hunger'/>
             </vmethod>
@@ -308,32 +325,35 @@
             -- 95
 
             <vmethod ret-type='bool' name='moveToGround'>
-                <int16_t/> <int16_t/> <int16_t/>
+                <int16_t name='x'/> <int16_t name='y'/> <int16_t name='z'/>
             </vmethod>
-            <vmethod name='categorize' comment='Add item to world.items.other.*'> <bool/> </vmethod>
+            <vmethod name='categorize' comment='Add item to world.items.other.*'> <bool name='in_play'/> </vmethod>
             <vmethod name='uncategorize' comment='Remove item from world.items.other.*'/>
             <vmethod ret-type='bool' name='isFurniture'> <bool name='empty'/> </vmethod>
             <vmethod ret-type='bool' name='isPressed'/>
-            <vmethod ret-type='bool' name='isCageOrTrap'/>
+            <vmethod ret-type='bool' name='isAnimal' comment='stored in Animal stockpiles'/>
 
-            <vmethod/>
+            <vmethod name='assignQuality'>
+                <pointer name='maker' type-name='unit'/>
+                <enum base-type='int16_t' name='job_skill' type-name='job_skill'/>
+            </vmethod>
             <vmethod name='notifyLostMasterwork'/>
-            <vmethod/>
-            <vmethod/>
-            <vmethod/>
+            <vmethod name='addMagic'/>
+            <vmethod name='magic_unk1'/>
+            <vmethod name='magic_unk2'/>
 
             -- 106
 
-            <vmethod/>
-            <vmethod/>
-            <vmethod/>
+            <vmethod name='magic_unk3'/>
+            <vmethod name='magic_unk4'/>
+            <vmethod name='setDisplayColor'/>
             <vmethod ret-type='bool' name='isDamagedByHeat'/>
             <vmethod ret-type='bool' name='needTwoHandedWield'> <int32_t/> </vmethod>
 
             <vmethod name='splitStack'>
                 <ret-type><pointer type-name='item'/></ret-type>
-                <int32_t/>
-                <int32_t/>
+                <int32_t name='stack_size'/>
+                <bool name='preserve_containment'/>
             </vmethod>
             <vmethod ret-type='bool' name='isTameableVermin'/>
             <vmethod ret-type='bool' name='isDistillable'>
@@ -360,7 +380,7 @@
                 <int16_t name='mat_type'/> <int32_t name='mat_index'/>
                 <enum type-name='matter_state' base-type='int16_t' name='mat_state'/>
                 <uint16_t name='temp'/> <int32_t name='size'/>
-                <int16_t name='unk'/> <uint16_t name='flags'/>
+                <int16_t name='body_part_id'/> <uint16_t name='flags'/>
             </vmethod>
             <vmethod name='removeContaminantByIdx'>
                 <int32_t name='index'/> <int32_t name='amount'/>
@@ -395,13 +415,13 @@
                 <ret-type><pointer><stl-vector type-name='pointer'/></pointer></ret-type>
             </vmethod>
             <vmethod/>
-            <vmethod/>
+            <vmethod ret-type='bool' name='isSplittable' comment='if false, you throw the entire stack at once'/>
             <vmethod/>
 
             -- 136
 
             <vmethod/>
-            <vmethod/>
+            <vmethod name='propagateUnitRefs'/> add to unit.owned_items/traded_items
             <vmethod ret-type='bool' name='isBag' comment='BOX made of cloth'/>
             <vmethod ret-type='bool' name='isSand'/>
             <vmethod/>
@@ -414,9 +434,16 @@
 
             -- 146
 
-            <vmethod/>
-            <vmethod/>
-            <vmethod/>
+            <vmethod ret-type='bool' name='setTemperatureFromMapTile'>
+                <int32_t name='x'/> <int32_t name='y'/> <int32_t name='z'/>
+                <bool name='local'/> <bool name='contained'/>
+            </vmethod>
+            <vmethod ret-type='bool' name='setTemperatureFromMap'>
+                <bool name='local'/> <bool name='contained'/>
+            </vmethod>
+            <vmethod ret-type='bool' name='setTemperature'>
+                <uint16_t name='temp'/> <bool name='local'/> <bool name='contained'/>
+            </vmethod>
             <vmethod ret-type='bool' name='updateTempFromMap'>
                 <bool name='local'/> <bool name='contained'/> <bool name='adjust'/>
                 <int32_t name='multiplier'/>
@@ -445,7 +472,7 @@
             <vmethod ret-type='int32_t' name='getProjectileSize'/>
             <vmethod ret-type='bool' name='isImprovable'>
                 <pointer type-name='job'/>
-                <int32_t/> <int32_t/>
+                <int16_t name='mat_type'/> <int32_t name='mat_index'/>
             </vmethod>
             <vmethod name='setSharpness'>
                 <int32_t name='unk1'/>
@@ -463,7 +490,12 @@
 
             <vmethod/>
             <vmethod ret-type='bool' name='isProcessableVialAtStill'/>
-            <vmethod/>
+            <vmethod ret-type='bool' name='isSimilarToItem'>
+                <enum base-type='int16_t' name='item_type' type-name='item_type'/>
+                <int16_t name='item_subtype'/>
+                <int16_t name='mat_type'/>
+                <int32_t name='mat_index'/>
+            </vmethod>
             <vmethod ret-type='int32_t' name='getBlockChance'/>
             <vmethod/>
 
@@ -474,15 +506,15 @@
             <vmethod ret-type='int8_t' name='getEffectiveArmorLevel'
                     comment="adds 1 if it has [METAL_ARMOR_LEVELS] and it's made of an inorganic mat"/>
             <vmethod/>
-            <vmethod ret-type='bool' name='isOrganicCloth'/>
+            <vmethod ret-type='bool' name='isItemOrganicCloth'/> only for item_cloth
 
-            <vmethod/>
+            <vmethod ret-type='bool' name='isMadeOfOrganicCloth'/> for all constructed items
             <vmethod name='coverWithContaminant' comment='also stops fire; used for rain'>
                 <int16_t name='mat_type'/> <int32_t name='mat_index'/>
                 <enum type-name='matter_state' base-type='int16_t' name='mat_state'/>
                 <uint16_t name='temperature'/>
             </vmethod>
-            <vmethod/>
+            <vmethod ret-type='bool' name='hasImprovements'/> any at all
             <vmethod ret-type='bool' name='isImproved'/>
             <vmethod name='getMagic'>
                 <ret-type><pointer><stl-vector><pointer type-name='item_magicness'/></stl-vector></pointer></ret-type>
@@ -518,14 +550,16 @@
             <vmethod ret-type='bool' name='isClothing'/>
 
             <vmethod ret-type='bool' name='isWet'/>
-            <vmethod/>
+            <vmethod ret-type='int32_t' name='getCurrencyValue' comment='that is, value of coins'>
+                <pointer type-name='historical_entity' name='appraiser'/>
+            </vmethod>
             <vmethod ret-type='bool' name='isAssignedToStockpile'/>
             <vmethod ret-type='bool' name='isAssignedToThisStockpile'> <int32_t/> </vmethod>
-            <vmethod/>
+            <vmethod name='detachStockpileAssignment' comment='also removes links from the pile'/>
 
             -- 205
 
-            <vmethod name='removeStockpileAssignment'/>
+            <vmethod name='removeStockpileAssignment' comment='just wipes the fields'/>
             <vmethod name='getStockpile2'>
                 <ret-type><pointer type-name='item_stockpile_ref'/></ret-type>
             </vmethod>
@@ -534,14 +568,23 @@
             <vmethod/>
 
             <vmethod ret-type='int32_t' name='getThreadDyeValue'> <int32_t comment='unused'/> </vmethod>
+            <vmethod name='getColorAndShape'>
+                <pointer name='colors'><stl-vector type-name='int16_t'/></pointer>
+                <pointer name='shapes'><stl-vector type-name='int16_t'/></pointer>
+            </vmethod>
             <vmethod/>
-            <vmethod/>
-            <vmethod/>
-            <vmethod/>
+            <vmethod ret-type='bool' name='isArmor' comment='for armor user skill encumberance'/>
+            <vmethod ret-type='int32_t' name='calcUniformScore'>
+                <pointer type-name='squad_uniform_spec'/>
+                <bool name='exact_match'/>
+                <enum base-type='int16_t' type-name='job_skill' name='best_any'/>
+                <enum base-type='int16_t' type-name='job_skill' name='best_melee'/>
+                <enum base-type='int16_t' type-name='job_skill' name='best_ranged'/>
+            </vmethod>
 
             -- 215
 
-            <vmethod/>
+            <vmethod ret-type='int32_t' name='calcBaseUniformScore'/>
             <vmethod/>
             <vmethod/>
             <vmethod/>
@@ -589,7 +632,7 @@
     </struct-type>
 
     <class-type type-name='item_actual' inherits-from='item' original-name='item_actualst'>
-        <int32_t name='stack_size'/>
+        <int32_t name='stack_size' init-value='1'/>
 
         <code-helper name='describe'>
             (if (> $.stack_size 1) (fmt "stack: ~A" $.stack_size))
@@ -612,8 +655,7 @@
             </stl-vector>
         </pointer>
 
-        <uint16_t name='temperature'/>
-        <uint16_t name='temperature_fraction'/>
+        <compound name='temperature' type-name='temperaturest'/>
 
         <int16_t name='wear'/>
         <int32_t name='wear_timer' comment='counts up to 806400'/>
@@ -652,13 +694,43 @@
 
     -- BODY COMPONENT
 
-    <struct-type type-name='body_component_info'>
-        <stl-vector name='body_part_308' type-name='uint32_t'/> // 87*0 ?
+    <bitfield-type type-name='body_part_status'>
+        <flag-bit name='on_fire'/>
+        <flag-bit name='missing'/>
+        <flag-bit name='organ_loss' comment='cyan'/>
+        <flag-bit name='organ_damage' comment='yellow'/>
 
-        <stl-vector name='unk_318' type-name='uint32_t'/>
+        <flag-bit name='muscle_loss' comment='red'/>
+        <flag-bit name='muscle_damage' comment='yellow'/>
+        <flag-bit name='bone_loss' comment='red'/>
+        <flag-bit name='bone_damage' comment='yellow'/>
+
+        <flag-bit name='skin_damage' comment='brown'/>
+        <flag-bit name='motor_nerve_severed'/>
+        <flag-bit name='sensory_nerve_severed'/>
+        <flag-bit/>
+
+        <flag-bit name='has_splint'/>
+        <flag-bit name='has_bandage'/>
+        <flag-bit name='has_plaster_cast'/>
+        <flag-bit/>
+
+        <flag-bit/>
+        <flag-bit/>
+        <flag-bit comment='seen e.g. on ribs smashed by blunt attack, but quickly disappeared'/>
+        <flag-bit/>
+    </bitfield-type>
+
+    <struct-type type-name='body_component_info'>
+        <stl-vector name='body_part_status' type-name='body_part_status'
+                    index-refers-to='$$._global._upglobal.caste.ref-target.body_info.body_parts[$]'/>
+
+        <stl-vector name='numbered_masks' type-name='uint32_t'
+                    comment='1 bit per instance of a numbered body part'/>
 
         <stl-vector name='body_layer_328' type-name='uint32_t'/>
-        <stl-vector name='body_layer_338' type-name='uint32_t'/> // 238*0
+        <stl-vector name='body_layer_338' type-name='uint32_t'
+                    comment='if 1, gone'/> // 238*0
         <stl-vector name='body_layer_348' type-name='uint32_t'/> // 238*0
         <stl-vector name='body_layer_358' type-name='uint32_t'/> // 238*0
         <stl-vector name='body_layer_368' type-name='uint32_t'/> // 238*0
@@ -693,28 +765,30 @@
         <int16_t name='race2' ref-target='creature_raw'/>
         <int16_t name='caste2' ref-target='caste_raw' aux-value='$$.race2'/>
 
-        <int32_t name='unk_88'/>
+        <int32_t name='rot_timer'/>
         <int8_t name='unk_8c'/>
 
         <compound name='body'>
-            <stl-vector name='wounds' type-name='pointer'/>
+            <stl-vector name='wounds' pointer-type='unit_wound'/>
 
             <static-array name='unk_100' type-name='int32_t' count='10'/>
             <int32_t name='unk_c8'/>
 
             <compound name='components' type-name='body_component_info'/>
 
-            <static-array type-name='int32_t' name='physical_attr_unk1'
+            <static-array type-name='int32_t' name='physical_attr_value'
                           count='6' index-enum='physical_attribute_type'/>
             <static-array type-name='int32_t' name='physical_attr_unk2'
                           count='6' index-enum='physical_attribute_type'/>
-            <static-array type-name='int32_t' name='physical_attr_unk3'
+            <static-array type-name='int32_t' name='physical_attr_tissues'
                           count='6' index-enum='physical_attribute_type'/>
 
             <stl-vector name='unk_194' type-name='int32_t'/>
-            <stl-vector name='unk_1a4' type-name='int32_t'/>
-            <stl-vector name='unk_1b4' type-name='int32_t'/>
-            <int32_t name="unk_18c"/>
+            <stl-vector name='body_modifiers' type-name='int32_t'
+                        index-refers-to='$$._global.caste.ref-target.body_appearance_modifiers[$]'/>
+            <stl-vector name='bp_modifiers' type-name='int32_t'
+                        index-refers-to='$$._global.caste.ref-target.bp_appearance.modifier_idx[$].refers-to'/>
+            <int32_t name="unk_18c" comment='=unit.appearance.unk_4c8'/>
         </compound>
 
         <int32_t name="birth_year"/>
@@ -736,8 +810,7 @@
         </compound>
 
         <int32_t name="blood_count"/>
-
-        <int32_t name="unk_1e0" comment='== counters.unk_cntdn_598'/>
+        <int32_t name="stored_fat"/>
 
         <int32_t name='hist_figure_id2' ref-target='historical_figure'/>
         <int32_t comment='v0.34.01, actual offset unknown'/>
@@ -784,8 +857,8 @@
     <class-type type-name='item_critter' inherits-from='item_actual' original-name='item_critterst'>
         <int16_t name='race' ref-target='creature_raw'/>
         <int16_t name='caste' ref-target='caste_raw' aux-value='$$.race'/>
-        <int32_t name='unk_7c'/>
-        <int32_t name='unk_80'/>
+        <int32_t name='milk_timer'/>
+        <int32_t name='airdrown_timer'/>
     </class-type>
 
     -- LIQUID/POWER
@@ -799,7 +872,7 @@
     <class-type type-name='item_liquipowder' inherits-from='item_actual'
                 original-name='item_liquipowderst'>
         <compound name='mat_state' type-name='item_matstate'/>
-        <int32_t name='dimension'/>
+        <int32_t name='dimension' init-value='150'/>
         <int16_t name='mat_type' ref-target='material' aux-value='$$.mat_index'/>
         <int32_t name='mat_index'/>
     </class-type>
@@ -813,7 +886,7 @@
         <int16_t name='subtype'/>
         <int16_t name='mat_type' ref-target='material' aux-value='$$.mat_index'/>
         <int32_t name='mat_index'/>
-        <int32_t name='dimension'/>
+        <int32_t name='dimension' init-value='150'/>
     </class-type>
 
     <class-type type-name='item_smallgemst' inherits-from='item_actual'>
@@ -849,7 +922,7 @@
         <int16_t name='mat_type' ref-target='material' aux-value='$$.mat_index'/>
         <int32_t name='mat_index'/>
         <int32_t name='grow_counter'/>
-        <int32_t name='unk_84'/>
+        <int32_t name='planting_skill'/>
     </class-type>
 
     <class-type type-name='item_skin_tannedst' inherits-from='item_actual'>
@@ -902,8 +975,8 @@
 
     <class-type type-name='item_foodst' inherits-from='item_crafted'>
         <pointer name='subtype' type-name='itemdef_foodst'/>
-        <int32_t name='unk_94'/>
-        <int16_t name='unk_98'/>
+        <int32_t name='entity' ref-target='historical_entity'/>
+        <int16_t name='recipe_id'/>
         <stl-vector name='ingredients'>
             <pointer>
                 <int16_t/>
@@ -940,7 +1013,7 @@
         <int16_t name='unk_92'/>
         <int32_t name='unk_94'/>
         <int8_t name='unk_98'/>
-        <int32_t name='dimension'/>
+        <int32_t name='dimension' init-value='15000'/>
     </class-type>
 
     <class-type type-name='item_eggst' inherits-from='item_actual'>
@@ -1024,7 +1097,7 @@
     </class-type>
     <class-type type-name='item_glovesst' inherits-from='item_constructed'>
         <pointer name='subtype' type-name='itemdef_glovesst'/>
-        <df-flagarray name='flags' comment='1 right, 2 left'/>
+        <df-flagarray name='handedness' comment='1 right, 2 left'/>
     </class-type>
     <class-type type-name='item_pantsst' inherits-from='item_constructed'>
         <pointer name='subtype' type-name='itemdef_pantsst'/>
@@ -1080,7 +1153,7 @@
     <class-type type-name='item_slabst' inherits-from='item_constructed'>
         <stl-string name='description'/>
         <int32_t name='unk_bc'/>
-        <int16_t name='unk_c0'/>
+        <enum base-type='int16_t' type-name='slab_engraving_type' name='engraving_type'/>
     </class-type>
 
     <class-type type-name='item_orthopedic_castst' inherits-from='item_constructed'>
@@ -1089,7 +1162,7 @@
     </class-type>
 
     <class-type type-name='item_coinst' inherits-from='item_constructed'>
-        <int16_t name='unk_a0'/>
+        <int16_t name='coin_batch'/>
     </class-type>
 
     <class-type type-name='item_totemst' inherits-from='item_constructed'>
@@ -1099,7 +1172,7 @@
     </class-type>
 
     <class-type type-name='item_clothst' inherits-from='item_constructed'>
-        <int32_t name='dimension'/>
+        <int32_t name='dimension' init-value='10000'/>
     </class-type>
 
     <class-type type-name='item_bookst' inherits-from='item_constructed'>

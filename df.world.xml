@@ -71,8 +71,7 @@
             <flag-bit name='discovered'/>
         </bitfield>
 
-        <int16_t name="death_cause"
-                 comment='drained of blood, etc - a switch key'/>
+        <enum base-type='int16_t' name='death_cause' type-name='death_type'/>
     </struct-type>
 
     <struct-type type-name='criminal_case'
@@ -180,8 +179,9 @@
         dtor 89fff80
         <stl-vector name='glowing_barriers'>
             <pointer>
-                <int32_t name='id'/>
-                <stl-vector/>
+                <int8_t/>
+                <int32_t/>
+                <stl-vector name='buildings' type-name='int32_t' ref-target='building'/>
                 <compound name='pos' type-name='coord'/>
             </pointer>
         </stl-vector>
@@ -190,8 +190,7 @@
                 <int8_t/>
                 <int32_t/>
                 <compound name='tiles' type-name='coord_path'/>
-                <int32_t/>
-                <int16_t/>
+                <compound name='pos' type-name='coord' comment='seemingly unused'/>
             </pointer>
         </stl-vector>
 
@@ -214,12 +213,10 @@
         <stl-vector name='unk_3C'>
             <pointer type-name='coord'/>
         </stl-vector>
-        <stl-vector name='unk_48'> campfires?
+        <stl-vector name='campfires'>
             <pointer>
-                <int16_t/>
-                <int16_t/>
-                <int16_t/>
-                <int32_t/>
+                <compound type-name='coord' name='pos'/>
+                <int32_t name='timer'/>
             </pointer>
         </stl-vector>
         <stl-vector name='unk_54'> hidden spider webs?
@@ -236,16 +233,14 @@
                 <stl-vector type-name='int32_t'/> unit ref?
             </pointer>
         </stl-vector>
-        <stl-vector name='unk_60'> fires?
+        <stl-vector name='fires'>
             <pointer>
-                <int16_t/>
-                <int16_t/>
-                <int16_t/>
-                <int16_t/>
-                <int16_t/>
-                <int16_t/>
-                <int16_t/>
-                <int16_t/>
+                <compound type-name='coord' name='pos'/>
+                <int16_t name='timer'/>
+                <uint16_t name='temperature'/>
+                <uint16_t name='unk1' comment='10000'/>
+                <uint16_t name='unk2'/>
+                <uint16_t name='unk3'/>
             </pointer>
         </stl-vector>
         <stl-vector name='unk_6C'>
@@ -404,34 +399,18 @@
                 <int32_t name='entity' ref-target='historical_entity'/>
                 <int32_t name='ruler' ref-target='historical_figure'/>
                 <compound name='image_front'>
-                    <int32_t name='id' ref-target='art_image_collection'/>
+                    <int32_t name='id' ref-target='art_image_chunk'/>
                     <int16_t name='subid' ref-target='art_image' aux-value='$$.id'/>
                 </compound>
                 <compound name='image_back'>
-                    <int32_t name='id' ref-target='art_image_collection'/>
+                    <int32_t name='id' ref-target='art_image_chunk'/>
                     <int16_t name='subid' ref-target='art_image' aux-value='$$.id'/>
                 </compound>
             </pointer>
         </stl-vector>
 
         <stl-vector name='populations'>
-            <pointer>
-                <enum base-type='int8_t' name='type' type-name='world_population_type'/>
-
-                <compound is-union='true'>
-                    <int16_t name="race" ref-target='creature_raw'/>
-                    <int16_t name="plant" ref-target='plant_raw'/>
-                </compound>
-
-                <int32_t name="quantity"/>
-                <int8_t name="unk_8"/>
-
-                <compound name='population' type-name='world_population_ref'/>
-
-                <int32_t init-value='-1'/>
-                <int32_t init-value='-1'/>
-                <int32_t init-value='-1'/>
-            </pointer>
+            <pointer type-name='local_population'/>
         </stl-vector>
 
         --
@@ -447,18 +426,19 @@
         --  Entities
 
         <compound name='entities'>
-            <stl-vector name='all'>
-                <pointer type-name='historical_entity'/>
-            </stl-vector>
+            <stl-vector name='all' pointer-type='historical_entity'/>
 
             <stl-vector name='bad' has-bad-pointers='true'>
                 <pointer type-name='historical_entity'/>
             </stl-vector>
         </compound>
 
-        -- Unknown
+        -- Apparently a temporary buffer for world construction stuff
 
-        <padding size='80004' comment='0 bytes; same size on Windows'/>
+        <compound name='worldgen_coord_buf'>
+            <static-array count='20000' type-name='coord2d' name='slots'/>
+            <int16_t name='next_slot'/>
+        </compound>
 
         -- Units
 
@@ -485,14 +465,10 @@
             </stl-vector>
         </compound>
 
-        -- Unknown
+        -- Unit and Art Chunks
 
-        <stl-vector name='unit_chunks'>
-            <pointer/>
-        </stl-vector>
-        <stl-vector name='art_images'>
-            <pointer type-name='art_image_collection'/>
-        </stl-vector>
+        <stl-vector name='unit_chunks' pointer-type='unit_chunk'/>
+        <stl-vector name='art_image_chunks' pointer-type='art_image_chunk'/>
 
         -- Nemesis
 
@@ -589,11 +565,14 @@
             <stl-vector name='bad' has-bad-pointers='true' type-name='pointer'/>
         </compound>
 
-        -- Unknown
+        -- Stockpile classifier
 
-        <padding size='80'/>
+        <compound name='stockpile'>
+            <static-array type-name='int32_t' name='num_jobs' count='10' index-enum='hauler_type'/>
+            <static-array type-name='int32_t' name='num_haulers' count='10' index-enum='hauler_type'/>
 
-        <compound name='unk_item_classifier'>
+            -- Pointers used as tokens; data never accessed by the look of it:
+
             <compound name='simple1'>
                 <int8_t/>
                 <int8_t name='food'/>
@@ -682,9 +661,13 @@
 
         -- Unknown
 
-        <padding size='500' comment='bool array?'/>
-        <static-array name='unk_14818' type-name='int8_t' count='250000'/>
-        <int32_t name='unk_518a8'/>
+        <compound name='enemy_status_cache' comment='?'>
+            <static-array name='slot_used' type-name='bool' count='500'/>
+            <static-array name='rel_map' count='500'>
+                <static-array type-name='int8_t' count='500'/>
+            </static-array>
+            <int32_t name='next_slot'/>
+        </compound>
 
         <compound name='schedules'>
             <stl-vector name='all'>
@@ -741,7 +724,11 @@
             </stl-vector>
 
             <int32_t name='next_report_id'/>
-            <int32_t/>
+            <bitfield name='flags'>
+                <flag-bit name='combat'/>
+                <flag-bit name='hunting'/>
+                <flag-bit name='sparring'/>
+            </bitfield>
             <int32_t name='display_timer'/>
 
             <static-array name='slots' count='100'>
@@ -859,8 +846,12 @@
             <int32_t name='region_y'/>
             <int32_t name='region_z'/>
 
-            <static-array name='unknown_52d20'
-                          count='2810' type-name='int16_t'/>
+            <static-array name='distance_lookup' count='53'>
+                <static-array count='53' type-name='int16_t'
+                              comment='Appears to be precomputed rounded integer distances'/>
+            </static-array>
+
+            <uint8_t name='unk1'/>
 
             <pointer type-name='z_level_flags' name='z_level_flags'
                      is-array='true' comment='v0.34.05'/>
@@ -868,37 +859,69 @@
 
         <pointer name='world_data' type-name='world_data'/>
 
-        <padding size='4' comment='v0.34.03'/>
-
-        <compound name='unk_54318'>
-            dtor 0x856CE30
-            <padding size='1188'/>
-            <stl-vector comment='547b4'/>
-            <stl-vector/>
-            <padding size='8'/>
-            <stl-vector/>
-            <stl-vector/>
-            <padding size='8'/>
-            <bool/>
-            <stl-string/> 547f8
-            <stl-string comment='v0.34.01'/>
-            <stl-string comment='v0.34.01'/>
-            <stl-string comment='v0.34.01'/>
-            <stl-string comment='v0.34.01'/>
-            <padding size='8'/>
-            <stl-vector comment='54814'/>
-            <stl-vector/>
-            <padding size='8'/>
-            <stl-vector/>
-            <stl-vector/>
-            <padding size='8'/>
-            <static-array count='10' comment='true array 54854'>
+        <compound name='worldgen_status'>
+            <int16_t name='state'/>
+            <int32_t name='num_rejects'/>
+            <static-array count='53' type-name='int32_t'/>
+            <static-array count='53' type-name='int32_t'/>
+            <int16_t name='rejection_reason'/>
+            <int32_t name='lakes_total'/>
+            <int32_t/>
+            <int16_t/>
+            <int32_t name='lakes_cur'/>
+            <int32_t/>
+            <int32_t/>
+            <static-array count='100' type-name='int32_t'/>
+            <static-array count='100' type-name='int8_t'/>
+            <static-array count='100' type-name='int16_t'/>
+            <int32_t/>
+            <int32_t name='finalized_civ_mats'/>
+            <int32_t name='finalized_art'/>
+            <int32_t name='finalized_uniforms'/>
+            <int32_t name='finalized_sites'/>
+            <int32_t/>
+            <int32_t/>
+            <int32_t/>
+            <stl-vector type-name='pointer'/>
+            <stl-vector type-name='pointer'/>
+            <int32_t name='width'/>
+            <int32_t name='height'/>
+            <stl-vector type-name='pointer'/>
+            <stl-vector type-name='pointer'/>
+            <int32_t name='rivers_total'/>
+            <int32_t name='rivers_cur'/>
+            <int8_t/>
+            <stl-string name='last_param_set'/>
+            <stl-string name='last_seed'/>
+            <stl-string name='last_name_seed'/>
+            <stl-string name='last_history_seed'/>
+            <stl-string name='last_creature_seed'/>
+            <bool name='placed_caves'/>
+            <bool name='placed_good_evil'/>
+            <bool name='placed_megabeasts'/>
+            <bool name='placed_other_beasts'/>
+            <bool name='made_cave_pops'/>
+            <bool name='made_cave_civs'/>
+            <bool name='placed_civs'/>
+            <bool name='finished_prehistory'/>
+            <stl-vector type-name='pointer'/>
+            <stl-vector type-name='pointer'/>
+            <int32_t/>
+            <int8_t/>
+            <int8_t/>
+            <int8_t/>
+            <int8_t/>
+            <stl-vector type-name='pointer'/>
+            <stl-vector type-name='pointer'/>
+            <int32_t/>
+            <int32_t/>
+            <static-array count='10'>
                 <stl-vector/>
             </static-array>
-            <static-array count='10' comment='true array 548cc'>
+            <static-array count='10'>
                 <stl-vector/>
             </static-array>
-            <static-array count='10' comment='true array'>
+            <static-array count='10'>
                 <stl-vector/>
             </static-array>
             <stl-vector/>
@@ -907,11 +930,11 @@
             <stl-vector/>
             <stl-vector/>
             <stl-vector/>
+            <int32_t/>
+            <int32_t/>
         </compound>
 
-        <padding size='8' comment='0'/>
-        <int32_t name='unk_54a0c'/>
-        <int32_t name='unk_54a10'/>
+        <compound name='orphaned_flow_pool' type-name='flow_reuse_pool'/>
 
         -- RAWs
 
@@ -1029,7 +1052,15 @@
                 <int32_t name='titan_number'/>
                 <static-array type-name='int32_t' name='titan_attack_trigger' count='3'/>
                 <int32_t name='demon_number'/>
-                <int32_t name='night_creature_number'/>
+                <int32_t name='night_troll_number'/>
+                <int32_t name='bogeyman_number'/>
+                <int32_t name='vampire_number'/>
+                <int32_t name='werebeast_number'/>
+                <int32_t name='secret_number'/>
+                <int32_t name='regional_interaction_number'/>
+                <int32_t name='disturbance_interaction_number'/>
+                <int32_t name='evil_cloud_number'/>
+                <int32_t name='evil_rain_number'/>
                 <int32_t name='good_sq_counts_0'/>
                 <int32_t name='evil_sq_counts_0'/>
                 <int32_t name='good_sq_counts_1'/>
@@ -1055,8 +1086,6 @@
             </compound>
         </compound>
 
-        <padding size='32' comment='v0.34.01'/>
-
         -- hist figures
 
         <compound name='history' type-name='world_history'/>
@@ -1069,31 +1098,36 @@
 
         <int32_t name='frame_counter' comment='increases by 1 every time . is pressed'/>
 
-        <compound name='unk_5a39c'>
-            <stl-vector name='unk_5a39c'/>
+        <stl-vector name='orphaned_flows' comment='flows that are not tied to a map_block'>
+            <pointer type-name='flow_info'/>
+        </stl-vector>
 
-            <static-array name='unk' count='80000'>
-                <comment>Looks like a temporary buffer for pathfinding or something.</comment>
-                <uint16_t name='unk1a'/>
-                <uint16_t name='tag'/>
-                <int32_t name='unk2'/>
+        <compound name='pathfinder'>
+            <static-array name='boundary_heap' count='80000'>
+                <comment>A heap of current boundary tiles.</comment>
+                <int32_t name='total_cost'/>
+                <int32_t name='local_cost'/>
                 <int16_t name='x'/>
                 <int16_t name='y'/>
                 <int32_t name='z'/>
             </static-array>
+            <int32_t name='heap_count'/>
 
-            <int32_t/>
             <compound name='pos1' type-name='coord'/>
             <compound name='pos2' type-name='coord'/>
-            <int32_t/>
-            <int32_t/>
-            <int32_t/>
-            <uint16_t/>
-            <uint16_t name='tag'/>
-            <bool/>
-            <uint16_t/>
-            <bool/>
-            <int16_t/>
+
+            -- Not quite simple distance, it seems:
+            <int32_t name='dist_x'/>
+            <int32_t name='dist_y'/>
+            <int32_t name='dist_z'/>
+
+            <int32_t name='next_path_cost'/>
+            <bool name='wipe_path_cost'/>
+            <uint16_t name='next_path_tag'/>
+            <bool name='wipe_path_tag'/>
+
+            <int16_t name='next_walkable_id'/>
+
             <int16_t name='plant_update_step'/>
             <bool/>
             <int32_t/>
@@ -1112,7 +1146,8 @@
             </static-array>
         </compound>
 
-        <int32_t name="unk_192cc4"/>
+        <bool/>
+        <bool/>
 
         <compound name='arena_spawn'>
             <stl-vector name='race'>

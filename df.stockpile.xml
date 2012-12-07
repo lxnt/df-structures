@@ -1,64 +1,56 @@
 <data-definition>
-    <struct-type type-name='stockpile_settings_food'>
-        <stl-vector type-name='bool' name='meat'
-                    index-refers-to='(food-mat-by-idx $Meat $)'/>
-        <stl-vector type-name='bool' name='fish'
-                    index-refers-to='(food-mat-by-idx $Fish $)'/>
-        <stl-vector type-name='bool' name='unprepared_fish'
-                    index-refers-to='(food-mat-by-idx $UnpreparedFish $)'/>
-        <stl-vector type-name='bool' name='egg'
-                    index-refers-to='(food-mat-by-idx $Eggs $)'/>
-        <stl-vector type-name='bool' name='plants'
-                    index-refers-to='(food-mat-by-idx $Plants $)'/>
-        <stl-vector type-name='bool' name='drink_plant'
-                    index-refers-to='(food-mat-by-idx $PlantDrink $)'/>
-        <stl-vector type-name='bool' name='drink_animal'
-                    index-refers-to='(food-mat-by-idx $CreatureDrink $)'/>
-        <stl-vector type-name='bool' name='cheese_plant'
-                    index-refers-to='(food-mat-by-idx $PlantCheese $)'/>
-        <stl-vector type-name='bool' name='cheese_animal'
-                    index-refers-to='(food-mat-by-idx $CreatureCheese $)'/> also 26
-        <stl-vector type-name='bool' name='seeds'
-                    index-refers-to='(food-mat-by-idx $Seed $)'/> also 31
-        <stl-vector type-name='bool' name='leaves'
-                    index-refers-to='(food-mat-by-idx $Leaf $)'/> also 32
-        <stl-vector type-name='bool' name='powder_plant'
-                    index-refers-to='(food-mat-by-idx $PlantPowder $)'/>
-        <stl-vector type-name='bool' name='powder_creature'
-                    index-refers-to='(food-mat-by-idx $CreaturePowder $)'/>
-        <stl-vector type-name='bool' name='glob'
-                    index-refers-to='(food-mat-by-idx $Glob $)'/>
-        <stl-vector type-name='bool' name='glob_paste'
-                    index-refers-to='(food-mat-by-idx $Paste $)'/>
-        <stl-vector type-name='bool' name='glob_pressed'
-                    index-refers-to='(food-mat-by-idx $Pressed $)'/>
-        <stl-vector type-name='bool' name='liquid_plant'
-                    index-refers-to='(food-mat-by-idx $PlantLiquid $)'/>
-        <stl-vector type-name='bool' name='liquid_animal'
-                    index-refers-to='(food-mat-by-idx $CreatureLiquid $)'/>
-        <stl-vector type-name='bool' name='liquid_misc'
-                    index-refers-to='(food-mat-by-idx $MiscLiquid $)'/>
-    </struct-type>
+    <enum-type type-name='hauler_type'>
+        <enum-item name='Any'/>
+        <enum-item name='Stone'/>
+        <enum-item name='Wood'/>
+        <enum-item name='Item'/>
+        <enum-item name='Bin'/>
+        <enum-item name='Body'/>
+        <enum-item name='Food'/>
+        <enum-item name='Refuse'/>
+        <enum-item name='Furniture'/>
+        <enum-item name='Animal'/>
+    </enum-type>
 
-    <struct-type type-name='stockpile_settings_refuse'>
-        <stl-vector type-name='bool' name='type' index-enum='item_type'/>
-        <stl-vector type-name='bool' name='corpses'
-                    index-refers-to='(find-creature $)'/>
-        <stl-vector type-name='bool' name='body_parts'
-                    index-refers-to='(find-creature $)'/>
-        <stl-vector type-name='bool' name='skulls'
-                    index-refers-to='(find-creature $)'/>
-        <stl-vector type-name='bool' name='bones'
-                    index-refers-to='(find-creature $)'/>
-        <stl-vector type-name='bool' name='hair'
-                    index-refers-to='(find-creature $)'/>
-        <stl-vector type-name='bool' name='shells'
-                    index-refers-to='(find-creature $)'/>
-        <stl-vector type-name='bool' name='teeth'
-                    index-refers-to='(find-creature $)'/>
-        <stl-vector type-name='bool' name='horns'
-                    index-refers-to='(find-creature $)'/>
-    </struct-type>
+    <enum-type type-name='furniture_type'>
+        subset of item_type
+        <enum-item name='FLOODGATE'/>
+        <enum-item name='HATCH_COVER'/>
+        <enum-item name='GRATE'/>
+        <enum-item name='DOOR'/>
+        <enum-item name='CATAPULTPARTS'/>
+        <enum-item name='BALLISTAPARTS'/>
+        <enum-item name='TRAPPARTS'/>
+        <enum-item name='BED'/>
+        <enum-item name='TRACTION_BENCH'/>
+        <enum-item name='WINDOW'/>
+        <enum-item name='CHAIR'/>
+        <enum-item name='TABLE'/>
+        <enum-item name='COFFIN'/>
+        <enum-item name='STATUE'/>
+        <enum-item name='SLAB'/>
+        <enum-item name='QUERN'/>
+        <enum-item name='MILLSTONE'/>
+        <enum-item name='ARMORSTAND'/>
+        <enum-item name='WEAPONRACK'/>
+        <enum-item name='CABINET'/>
+        <enum-item name='ANVIL'/>
+        <enum-item name='BUCKET'/>
+        <enum-item name='BIN'/>
+        <enum-item name='BOX'/>
+        <enum-item name='SIEGEAMMO'/>
+        <enum-item name='BARREL'/>
+        <enum-item name='BALLISTAARROWHEAD'/>
+        <enum-item name='PIPE_SECTION'/>
+
+        tool types
+        <enum-item name='FOOD_STORAGE'/>
+        <enum-item name='MINECART'/>
+        <enum-item name='WHEELBARROW'/>
+        <enum-item name='OTHER_LARGE_TOOLS'/>
+
+        <enum-item name='SAND_BAG'/>
+    </enum-type>
 
     <enum-type type-name='stockpile_category' base-type='int16_t'>
         <enum-item name='Remove' value='-1'/>
@@ -68,7 +60,7 @@
         <enum-item name='Corpses'/>
         <enum-item name='Refuse'/>
         <enum-item name='Stone'/>
-        <enum-item name='Unused6'/> likely corresponds to Ore or Mining
+        <enum-item name='Ore'/>
         <enum-item name='Ammo'/>
         <enum-item name='Coins'/>
         <enum-item name='Bars'/>
@@ -92,9 +84,9 @@
         <flag-bit name='ammo'/>
         <flag-bit name='coins'/>
 
-        <flag-bit name='bars'/>
+        <flag-bit name='bars_blocks'/>
         <flag-bit name='gems'/>
-        <flag-bit name='goods'/>
+        <flag-bit name='finished_goods'/>
         <flag-bit name='leather'/>
         <flag-bit name='cloth'/>
         <flag-bit name='wood'/>
@@ -106,19 +98,56 @@
         <compound name='flags' type-name='stockpile_group_set'/>
 
         <compound name='animals'>
-            <bool name='animals_empty_cages'/>
-            <bool name='animals_empty_traps'/>
+            <bool name='empty_cages'/>
+            <bool name='empty_traps'/>
             <stl-vector type-name='bool' name='enabled'
                         index-refers-to='(find-creature $)'/>
         </compound>
 
         <compound name='food'>
-            <compound type-name='stockpile_settings_food' name='type'/>
+            <stl-vector type-name='bool' name='meat'
+                        index-refers-to='(food-mat-by-idx $Meat $)'/>
+            <stl-vector type-name='bool' name='fish'
+                        index-refers-to='(food-mat-by-idx $Fish $)'/>
+            <stl-vector type-name='bool' name='unprepared_fish'
+                        index-refers-to='(food-mat-by-idx $UnpreparedFish $)'/>
+            <stl-vector type-name='bool' name='egg'
+                        index-refers-to='(food-mat-by-idx $Eggs $)'/>
+            <stl-vector type-name='bool' name='plants'
+                        index-refers-to='(food-mat-by-idx $Plants $)'/>
+            <stl-vector type-name='bool' name='drink_plant'
+                        index-refers-to='(food-mat-by-idx $PlantDrink $)'/>
+            <stl-vector type-name='bool' name='drink_animal'
+                        index-refers-to='(food-mat-by-idx $CreatureDrink $)'/>
+            <stl-vector type-name='bool' name='cheese_plant'
+                        index-refers-to='(food-mat-by-idx $PlantCheese $)'/>
+            <stl-vector type-name='bool' name='cheese_animal'
+                        index-refers-to='(food-mat-by-idx $CreatureCheese $)'/>
+            <stl-vector type-name='bool' name='seeds'
+                        index-refers-to='(food-mat-by-idx $Seed $)'/>
+            <stl-vector type-name='bool' name='leaves'
+                        index-refers-to='(food-mat-by-idx $Leaf $)'/>
+            <stl-vector type-name='bool' name='powder_plant'
+                        index-refers-to='(food-mat-by-idx $PlantPowder $)'/>
+            <stl-vector type-name='bool' name='powder_creature'
+                        index-refers-to='(food-mat-by-idx $CreaturePowder $)'/>
+            <stl-vector type-name='bool' name='glob'
+                        index-refers-to='(food-mat-by-idx $Glob $)'/>
+            <stl-vector type-name='bool' name='glob_paste'
+                        index-refers-to='(food-mat-by-idx $Paste $)'/>
+            <stl-vector type-name='bool' name='glob_pressed'
+                        index-refers-to='(food-mat-by-idx $Pressed $)'/>
+            <stl-vector type-name='bool' name='liquid_plant'
+                        index-refers-to='(food-mat-by-idx $PlantLiquid $)'/>
+            <stl-vector type-name='bool' name='liquid_animal'
+                        index-refers-to='(food-mat-by-idx $CreatureLiquid $)'/>
+            <stl-vector type-name='bool' name='liquid_misc'
+                        index-refers-to='(food-mat-by-idx $MiscLiquid $)'/>
             <bool name='prepared_meals'/>
         </compound>
 
         <compound name='furniture'>
-            <stl-vector type-name='bool' name='type' index-enum='item_type'/>
+            <stl-vector type-name='bool' name='type' index-enum='furniture_type'/>
             <stl-vector type-name='bool' name='other_mats'/> 16
             <stl-vector type-name='bool' name='mats'
                         index-refers-to='(material-by-id 0 $)'/>
@@ -130,15 +159,35 @@
         <int32_t name='unk1'/>
 
         <compound name='refuse'>
-            <compound type-name='stockpile_settings_refuse' name='type'/>
+            <stl-vector type-name='bool' name='type' index-enum='item_type'/>
+            <stl-vector type-name='bool' name='corpses'
+                        index-refers-to='(find-creature $)'/>
+            <stl-vector type-name='bool' name='body_parts'
+                        index-refers-to='(find-creature $)'/>
+            <stl-vector type-name='bool' name='skulls'
+                        index-refers-to='(find-creature $)'/>
+            <stl-vector type-name='bool' name='bones'
+                        index-refers-to='(find-creature $)'/>
+            <stl-vector type-name='bool' name='hair'
+                        index-refers-to='(find-creature $)'/>
+            <stl-vector type-name='bool' name='shells'
+                        index-refers-to='(find-creature $)'/>
+            <stl-vector type-name='bool' name='teeth'
+                        index-refers-to='(find-creature $)'/>
+            <stl-vector type-name='bool' name='horns'
+                        index-refers-to='(find-creature $)'/>
             <bool name='fresh_raw_hide'/>
             <bool name='rotten_raw_hide'/>
         </compound>
 
-        <stl-vector type-name='bool' name='stone'
-                    index-refers-to='(material-by-id 0 $)'/>
+        <compound name='stone'>
+            <stl-vector type-name='bool' name='mats'
+                        index-refers-to='(material-by-id 0 $)'/>
+        </compound>
 
-        <stl-vector type-name='bool' name='unk2'/>
+        <compound name='ore'>
+            <stl-vector type-name='bool' name='mats' comment='unused'/>
+        </compound>
 
         <compound name='ammo'>
             <stl-vector type-name='bool' name='type'
@@ -150,19 +199,23 @@
             <static-array type-name='bool' name='quality_total' count='7' index-enum='item_quality'/>
         </compound>
 
-        <stl-vector type-name='bool' name='coins'
-                    index-refers-to='(material-by-id 0 $)'/>
+        <compound name='coins'>
+            <stl-vector type-name='bool' name='mats'
+                        index-refers-to='(material-by-id 0 $)'/>
+        </compound>
 
-        <stl-vector type-name='bool' name='bars_other_mats'/> 5
-        <stl-vector type-name='bool' name='blocks_other_mats'/> 5
-        <stl-vector type-name='bool' name='bars_mats'
-                    index-refers-to='(material-by-id 0 $)'/>
-        <stl-vector type-name='bool' name='blocks_mats'
-                    index-refers-to='(material-by-id 0 $)'/>
+        <compound name='bars_blocks'>
+            <stl-vector type-name='bool' name='bars_other_mats'/>
+            <stl-vector type-name='bool' name='blocks_other_mats'/>
+            <stl-vector type-name='bool' name='bars_mats'
+                        index-refers-to='(material-by-id 0 $)'/>
+            <stl-vector type-name='bool' name='blocks_mats'
+                        index-refers-to='(material-by-id 0 $)'/>
+        </compound>
 
         <compound name='gems'>
             <stl-vector type-name='bool' name='rough_other_mats'
-                        index-refers-to='(material-by-id $ -1)'/> 659
+                        index-refers-to='(material-by-id $ -1)'/>
             <stl-vector type-name='bool' name='cut_other_mats'
                         index-refers-to='(material-by-id $ -1)'/>
             <stl-vector type-name='bool' name='rough_mats'
@@ -180,8 +233,10 @@
             <static-array type-name='bool' name='quality_total' count='7' index-enum='item_quality'/>
         </compound>
 
-        <stl-vector type-name='bool' name='leather'
-                    index-refers-to='(food-mat-by-idx $Leather $)'/>
+        <compound name='leather'>
+            <stl-vector type-name='bool' name='mats'
+                        index-refers-to='(food-mat-by-idx $Leather $)'/>
+        </compound>
 
         <compound name='cloth'>
             <stl-vector type-name='bool' name='thread_silk'
@@ -202,8 +257,10 @@
                         index-refers-to='(food-mat-by-idx $MetalThread $)'/>
         </compound>
 
-        <stl-vector type-name='bool' name='wood'
-                    index-refers-to='(find-plant-raw $)'/>
+        <compound name='wood'>
+            <stl-vector type-name='bool' name='mats'
+                        index-refers-to='(find-plant-raw $)'/>
+        </compound>
 
         <compound name='weapons'>
             <stl-vector type-name='bool' name='weapon_type'

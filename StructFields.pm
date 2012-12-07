@@ -101,12 +101,21 @@ my %custom_container_handlers = (
         my $item = get_container_item_type($_, -void => 'void*');
         return "std::deque<$item >";
     },
+    'stl-set' => sub {
+        my $item = get_container_item_type($_, -void => 'void*');
+        return "std::set<$item >";
+    },
     'stl-bit-vector' => sub {
         return "std::vector<bool>";
     },
     'df-flagarray' => sub {
         my $type = decode_type_name_ref($_, -attr_name => 'index-enum', -force_type => 'enum-type') || 'int';
         return "BitArray<$type>";
+    },
+    'df-static-flagarray' => sub {
+        my $type = decode_type_name_ref($_, -attr_name => 'index-enum', -force_type => 'enum-type') || 'int';
+        my $size = $_->getAttribute('count') or die "No count in df-static-flagarray.\n";
+        return "StaticBitArray<$size,$type>";
     },
     'df-array' => sub {
         my $item = get_container_item_type($_, -void => 'void*');
@@ -163,6 +172,9 @@ sub get_struct_field_type($;%) {
     delete $container_flags{-weak};
     delete $container_flags{-void};
 
+    my $is_bytes = $meta eq 'bytes';
+    check_bad_attrs($tag, $is_bytes, $is_bytes && $subtype eq 'padding');
+
     if ($prefix = $tag->getAttribute('ld:typedef-name')) {
         $prefix = fully_qualified_name($tag,$prefix) unless $flags{-local};
         $type_def = $tag;
@@ -189,7 +201,7 @@ sub get_struct_field_type($;%) {
     } elsif ($meta eq 'global') {
         my $tname = $tag->getAttribute('type-name')
             or die "Global field without type-name";
-        $type_def = register_ref($tname, !$flags{-weak});
+        $type_def = register_ref($tname, !$flags{-weak} || ($subtype && $subtype eq 'enum'));
         $prefix = $main_namespace.'::'.$tname;
     } elsif ($meta eq 'compound') {
         die "Unnamed compound in global mode: ".$tag->toString."\n" unless $flags{-local};
