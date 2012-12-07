@@ -158,7 +158,7 @@ def bitfield_t(e):
 enum_tab = {} # defined enums and their basetypes
 def enum_t(e):
     global unk, df_type_tab, enum_tab
-    funattrs = "__attribute__ ((const, unused))"
+    funattrs = "CONUSED"
     if e.tag == 'enum' and 'type-name' in e.attrib:
         fqtn = 'df::enums::{0}::{0}'.format(e.get('type-name'))
         if e.get('base-type') and e.get('base-type') != enum_tab[e.get('type-name')]:
@@ -176,14 +176,15 @@ def enum_t(e):
         implicit_def = False
     base_type = e.get('base-type', 'int32_t')
     enum_tab[type_t] = base_type
-    kdef.append("static const char * const key({0} k) {1};".format(type_t, funattrs))
-    kdef.append("static const char * const key({0} k) {{".format(type_t))
+    kdef.append("static const char * key({0} k) {1};".format(type_t, funattrs))
+    kdef.append("static const char * key({0} k) {{".format(type_t))
     kdef.append(item_indent + "switch(k) {")
     _min = 1<<31
     _max = -1<<31
     _count = 0
     value = -1
     rv.append("enum {type_t} : {base_type} {{".format(type_t = type_t, base_type = base_type ))
+    itemdef = []
     for ei in e.iter(tag = 'enum-item'):
         _count += 1
         if 'value' in ei.attrib:
@@ -195,11 +196,13 @@ def enum_t(e):
         if value < _min: _min = value
         if value > _max: _max = value
         name = ei.get('name', next(unk))
-        rv.append("{indent}{ei_name}{ei_value},".format(
+        itemdef.append("{indent}{ei_name}{ei_value}".format(
             ei_name = name,
             ei_value = value_s,
             indent = item_indent ))
         kdef.append(item_indent*2 + 'case {0}: return "{0}";'.format(name))
+    rv.extend(map(lambda x: x + ",", itemdef[:-1]))
+    rv.append(itemdef[-1])
     rv.append("};")
     if not implicit_def:
         rv.insert(0, "namespace enums {{ namespace {} {{".format(type_t))
@@ -386,7 +389,7 @@ class cxxheader(object):
 
 class xD(object):
     hdr_structs_h = dedent("""
-        #include <stdint.h>
+        #include <cstdint>
         #include <string>
         #include <vector>
         #include <deque>
@@ -394,10 +397,15 @@ class xD(object):
         #include "bitfields.h"
         """)
     hdr_bitfields_h = dedent("""
-        #include <stdint.h>
+        #include <cstdint>
         """)
     hdr_enums_h = dedent("""
-        #include <stdint.h>
+        #include <cstdint>
+        #if defined(__GNUC__)
+        # define CONUSED __attribute__ ((const, unused))
+        #else
+        # define CONUSED
+        #endif
         namespace df { namespace enums {
         /* dfhack::library/include/DataDefs.h */
         template<class EnumType, class IntType = int32_t>
@@ -472,7 +480,7 @@ class xD(object):
                 os.path.join(prefix, "globals.cc"))
         if verify:
             from subprocess import call
-            if not call("g++ -std=c++0x -c -o /dev/null {0}/globals.cc -I{0}".format(prefix).split()):
+            if not call("g++ -std=c++0x -c -o /dev/null {0}/globals.cc -I{0} -Wall -Wextra -pedantic -Werror".format(prefix).split()):
                 print("compiled ok.")
 
     def _enum_types(self, fname):
