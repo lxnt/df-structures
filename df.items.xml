@@ -17,7 +17,7 @@
         <flag-bit name='construction' comment='Material used in construction'/>
         <flag-bit name='encased' comment='Item encased in ice or obsidian'/>
 
-        <flag-bit name='unk4' comment='unknown, unseen'/>
+        <flag-bit name='unk12' comment='unknown, unseen'/>
         <flag-bit name='murder' comment='Implies murder - used in fell moods'/>
         <flag-bit name='foreign' comment='Item is imported'/>
         <flag-bit name='trader' comment='Item ownwed by trader'/>
@@ -27,29 +27,41 @@
         <flag-bit name='artifact' comment='Artifact'/>
         <flag-bit name='forbid' comment='Forbidden item'/>
 
-        <flag-bit name='unk6' comment='unknown, unseen'/>
+        <flag-bit name='unk20' comment='unknown, unseen'/>
         <flag-bit name='dump' comment='Designated for dumping'/>
         <flag-bit name='on_fire' comment='Indicates if item is on fire, Will Set Item On Fire if Set!'/>
         <flag-bit name='melt' comment='Designated for melting, if applicable'/>
 
         <flag-bit name='hidden' comment='Hidden item'/>
         <flag-bit name='in_chest' comment='Stored in chest/part of well?'/>
-        <flag-bit name='unk7' comment='unknown, unseen'/>
+        <flag-bit name='unk26' comment='unknown, unseen'/>
         <flag-bit name='artifact_mood' comment='created by mood/named existing item'/>
 
         <flag-bit name='temps_computed' comment='melting/boiling/ignite/etc. points'/>
         <flag-bit name='weight_computed'/>
-        <flag-bit name='unk10' comment='unknown, unseen'/>
-        <flag-bit name='unk11' comment='unknown, unseen'/>
+        <flag-bit name='unk30' comment='unknown, unseen'/>
+        <flag-bit name='unk31' comment='created by underground critters?'/>
     </bitfield-type>
 
     <bitfield-type type-name='item_flags2'>
         <flag-bit name='has_rider' comment='vehicle with a rider'/>
     </bitfield-type>
 
+    <enum-type type-name='item_magicness_type' base-type='int16_t'>
+        <enum-item name='Sparkle'/>
+        <enum-item name='AirWarped'/>
+        <enum-item name='Whistle'/>
+        <enum-item name='OddlySquare'/>
+        <enum-item name='SmallBumps'/>
+        <enum-item name='EarthSmell'/>
+        <enum-item name='Lightning'/>
+        <enum-item name='GrayHairs' comment='with value of 10 or higher, creatures that look at the item cannot think negative thoughts'/>
+        <enum-item name='RustlingLeaves'/>
+    </enum-type>
+
     <struct-type type-name='item_magicness'>
-        <int16_t name='type' comment=''/>
-        <int16_t name='value' comment='boosts item value by 50*this; when 10 or higher, changes the message for type 7'/>
+        <enum base-type='int16_t' name="type" type-name='item_magicness_type'/>
+        <int16_t name='value' comment='boosts item value by 50*this'/>
         <int16_t/>
         <int32_t name='flags' comment='1=does not show up in item description or alter item value'/>
     </struct-type>
@@ -263,8 +275,7 @@
             <vmethod/>
             <vmethod/>
             <vmethod name='setSeedsPlantSkillLevel'> <int32_t name='level'/> </vmethod>
-            <vmethod ret-type='int16_t' name='getCorpseMuscleAmount'
-                     comment='physical_attr_tissues[STRENGTH]'/>
+            <vmethod ret-type='int16_t' name='getCorpseSize' comment='size_info.size_cur'/>
 
             <vmethod name='ageItem'><int32_t name='amount'/></vmethod>
             <vmethod ret-type='int32_t' name='getCritterAirdrownTimer'/>
@@ -430,7 +441,8 @@
             <vmethod name='addStackSize'> <int32_t name='amount'/> </vmethod>
             <vmethod name='setStackSize'> <int32_t name='amount'/> </vmethod>
             <vmethod ret-type='bool' name='isAmmoClass'> <pointer type-name='stl-string'/> </vmethod>
-            <vmethod/>
+            <vmethod ret-type='bool' name='isAutoClean'
+                     comment='delete on_ground every season when in ANY_AUTO_CLEAN; default true'/>
 
             -- 146
 
@@ -737,6 +749,15 @@
         <stl-vector name='body_layer_378' type-name='uint32_t'/> // 238*0
     </struct-type>
 
+    <struct-type type-name='body_size_info'>
+        <int32_t name='size_cur'/>
+        <int32_t name='size_base'/>
+        <int32_t name='area_cur' comment='size_cur^0.666'/>
+        <int32_t name='area_base' comment='size_base^0.666'/>
+        <int32_t name='length_cur' comment='(size_cur*10000)^0.333'/>
+        <int32_t name='length_base' comment='(size_base*10000)^0.333'/>
+    </struct-type>
+
     <enum-type type-name='corpse_material_type'>
         <enum-item name='Plant'/>
         <enum-item name='Silk'/>
@@ -780,8 +801,8 @@
                           count='6' index-enum='physical_attribute_type'/>
             <static-array type-name='int32_t' name='physical_attr_unk2'
                           count='6' index-enum='physical_attribute_type'/>
-            <static-array type-name='int32_t' name='physical_attr_tissues'
-                          count='6' index-enum='physical_attribute_type'/>
+
+            <compound name='size_info' type-name='body_size_info'/>
 
             <stl-vector name='unk_194' type-name='int32_t'/>
             <stl-vector name='body_modifiers' type-name='int32_t'
@@ -795,8 +816,8 @@
         <int32_t name="birth_time"/>
         <int32_t name='curse_year' comment='v0.34.01'/>
         <int32_t name='curse_time' comment='v0.34.01'/>
-        <int32_t comment='v0.34.01'/>
-        <int32_t comment='v0.34.01'/>
+        <int32_t name='birth_year_bias' init-value='0' comment='v0.34.01'/>
+        <int32_t name='birth_time_bias' init-value='0' comment='v0.34.01'/>
         <int32_t name="death_year"/>
         <int32_t name="death_time"/>
 
@@ -864,7 +885,7 @@
     -- LIQUID/POWER
 
     <bitfield-type type-name='item_matstate'>
-        <flag-bit/>
+        <flag-bit name='no_auto_clean' comment='isAutoClean returns false'/>
         <flag-bit name='pressed'/>
         <flag-bit name='paste'/>
     </bitfield-type>

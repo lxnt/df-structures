@@ -8,6 +8,29 @@
         <code-helper name='describe'>$.code</code-helper>
     </struct-type>
 
+    <struct-type type-name='dipscript_popup_unit'>
+        <int32_t name='unk0'/>
+        <pointer type-name='unit' name='unit'/>
+        <int32_t name='unk8'/>
+        <int32_t name='unkC'/>
+        <bitfield name='flags'>
+            <flag-bit name='unk0'/>
+            <flag-bit name='unk1'/>
+            <flag-bit name='unk2'/>
+            <flag-bit name='unk3'/>
+            <flag-bit name='unk4'/>
+        </bitfield>
+    </struct-type>
+
+    <struct-type type-name='dipscript_popup'>
+        <int32_t name='unk0'/>
+        <pointer name='unk4' type-name='dipscript_popup_unit'/>
+        <bitfield name='flags'>
+            <flag-bit name='unk0'/>
+            <flag-bit name='unk1'/>
+        </bitfield>
+    </struct-type>
+
     <struct-type type-name='burrow' key-field='id' instance-vector='$global.ui.burrows.list'>
         <int32_t name='id'/>
         <stl-string name='name'/>
@@ -164,7 +187,7 @@
         <int32_t/>
         <int32_t/>
         <int32_t/>
-	<int16_t name='bookkeeper_settings'/> noble bookkeeper precision: 10/100/1000/10000/all_accurate
+        <int16_t name='bookkeeper_settings'/> noble bookkeeper precision: 10/100/1000/10000/all_accurate
 
         <stl-vector name='caravans'>
             <pointer type-name='caravan_state'/>
@@ -271,7 +294,7 @@
             <pointer type-name='dipscript_info'/>
         </stl-vector>
 
-        <stl-vector name='dipscript_popups' type-name='pointer'
+        <stl-vector name='dipscript_popups' pointer-type='dipscript_popup'
                     comment='cause viewscreen_meetingst to pop up'/>
 
         <compound name='kitchen'>
@@ -324,6 +347,7 @@
                 <stl-vector type-name='int32_t' name='shell'/>
                 <stl-vector type-name='int32_t' name='leather'/>
                 <stl-vector type-name='int32_t' name='silk'/>
+                <stl-vector type-name='int32_t' name='yarn'/>
                 <stl-vector type-name='int32_t' name='inorganic'/>
                 <stl-vector type-name='int32_t' name='meat'/>
                 <stl-vector type-name='int32_t' name='fish'/>
@@ -336,7 +360,6 @@
                 <stl-vector type-name='int32_t' name='cheese_animal'/>
                 <stl-vector type-name='int32_t' name='cheese_plant'/>
                 <stl-vector type-name='int32_t' name='pets'/>
-                <stl-vector type-name='int32_t' name='yarn'/>
             </compound>
             <compound name='price_setter'>
                 <stl-vector name='general_items' index-enum='item_type'><pointer type-name='unit'/></stl-vector>
@@ -356,6 +379,7 @@
                 <stl-vector name='shell'><pointer type-name='unit'/></stl-vector>
                 <stl-vector name='leather'><pointer type-name='unit'/></stl-vector>
                 <stl-vector name='silk'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='yarn'><pointer type-name='unit'/></stl-vector>
                 <stl-vector name='inorganic'><pointer type-name='unit'/></stl-vector>
                 <stl-vector name='meat'><pointer type-name='unit'/></stl-vector>
                 <stl-vector name='fish'><pointer type-name='unit'/></stl-vector>
@@ -368,7 +392,6 @@
                 <stl-vector name='cheese_animal'><pointer type-name='unit'/></stl-vector>
                 <stl-vector name='cheese_plant'><pointer type-name='unit'/></stl-vector>
                 <stl-vector name='pets'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='yarn'><pointer type-name='unit'/></stl-vector>
             </compound>
         </compound>
 
@@ -614,6 +637,8 @@
                      comment='For changing the above costs.'/>
 
             <bool name='autosave_request'/>
+            <bool name='autosave_unk' comment='set to 0 when a_rq set to 1'/>
+
             <int32_t name='unk6df4'/>
 
             <int16_t name='selected_hotkey'/>

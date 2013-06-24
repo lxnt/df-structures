@@ -14,7 +14,7 @@
         <int32_t name='civ_id' ref-target='historical_entity'/>
         <int16_t name='unk1'/>
         <int32_t name='diplomat_id' ref-target='historical_figure'/>
-        <int32_t name='unk2' comment='-1'/>
+        <int32_t name='diplomat_id2' ref-target='historical_figure'/>
         <stl-vector name="unk_10"/>
         <stl-vector name="unk_20"/>
         <int32_t name="unk_30"/>
@@ -38,8 +38,8 @@
 
     <struct-type type-name='pet_info'>
         <int32_t name='unk0' comment='uninitialized'/>
-        <int32_t name='unk1' comment='-1'/>
-        <int32_t name='pet_id' ref-target='unit'/>
+        <int32_t name='pet_item_id' ref-target='item'/>
+        <int32_t name='pet_unit_id' ref-target='unit'/>
         <compound name='name' type-name='language_name'/>
         <code-helper name='describe'>(describe-obj $.name)</code-helper>
         <int32_t name='unk3'/>
@@ -59,7 +59,10 @@
             <pointer type-name='building'/>
         </stl-vector>
         <int32_t name='rent_value'/>
-        <int32_t init-value='0'/>
+        <bitfield name='flags'>
+            <flag-bit name='eviction_underway'/>
+            <flag-bit name='move_underway'/>
+        </bitfield>
     </struct-type>
 
     <struct-type type-name='activity_entry' instance-vector='$global.world.activities.all' key-field='id'>

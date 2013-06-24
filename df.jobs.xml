@@ -66,19 +66,30 @@
         </flag-bit>
         <flag-bit name='item_lost' comment='set when a Hauled item is removed; causes cancel'/>
         <flag-bit/>
+
         <flag-bit/>
         <flag-bit name='by_manager'/>
         <flag-bit name='store_item'/>
         <flag-bit name='quality' count='3' comment='set by improvement code'/>
         <flag-bit name='specific_dropoff'
                   comment='for some jobs, blocks auto-restockpiling of the hauled item'/>
+        <flag-bit/>
+
+        <flag-bit name='on_break' comment='job displayed as On Break'/>
     </bitfield-type>
+
+    <enum-type type-name='job_subtype_surgery'>
+        <enum-item name='Surgery'/>
+        <enum-item name='StopBleeding'/>
+        <enum-item name='RepairCompoundFracture'/>
+        <enum-item name='RemoveRottenTissue'/>
+    </enum-type>
 
     <struct-type type-name='job' key-field='id'>
         <int32_t name='id' init-value='-1'/>
         <pointer name='list_link' type-name='job_list_link'/>
         <enum name='job_type' base-type='int16_t' type-name='job_type'/>
-        <int32_t name='unk2' init-value='-1'/>
+        <int32_t name='job_subtype' init-value='-1'/>   surgery only ?
 
         <code-helper name='describe'>$.job_type</code-helper>
 
@@ -93,7 +104,7 @@
         <int16_t name='mat_type' ref-target='material' aux-value='$$.mat_index'/>
         <int32_t name='mat_index' init-value='-1'/>
         <int16_t name='unk5' init-value='-1'/>
-        <int16_t name='unk6' init-value='-1'/>
+        <enum base-type='int16_t' name='item_type' type-name='item_type' comment='for Bait Trap jobs'/>
         <int16_t name='item_subtype' init-value='-1' comment='for StoreInStockpile: hauler_type'/>
 
         <compound name="item_category" type-name='stockpile_group_set'/>
@@ -137,7 +148,7 @@
             <enum-item name='LinkToTrigger'/>
             <enum-item/>
             <enum-item name='TargetContainer'/>
-            <enum-item/>
+            <enum-item name='QueuedContainer'/>     queued to be put in a container
             <enum-item name='PushHaulVehicle'/>     wheelbarrow
         </enum>
         <int32_t name='is_fetching'

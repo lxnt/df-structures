@@ -28,8 +28,13 @@
         <stl-vector type-name='int32_t'/>
     </struct-type>
 
-    <class-type type-name='abstract_building' original-name='abstract_buildingst'>
+    <class-type type-name='abstract_building' original-name='abstract_buildingst' key-field='id'>
         <int32_t name='id'/>
+
+        <code-helper name='find-instance'>
+            (find-by-id $(find-instance $world_site $$).buildings $id $)
+        </code-helper>
+
         <stl-vector>
             <pointer>
                 <int16_t/>
@@ -126,7 +131,11 @@
 
     <class-type type-name='abstract_building_dungeonst' inherits-from='abstract_building'>
         <compound name='name' type-name='language_name'/>
-        <int16_t/>
+        <enum base-type='int16_t' name='dungeon_type'>
+            <enum-item name='DUNGEON'/>
+            <enum-item name='SEWERS'/>
+            <enum-item name='CATACOMBS'/>
+        </enum>
         <int32_t/>
         <compound name='unk' type-name='abstract_building_unk'/>
         <int32_t/>
