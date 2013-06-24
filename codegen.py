@@ -48,11 +48,13 @@ tag_tab = {     'uint16_t':         'uint16_t',
                 'uint8_t':          'uint8_t',
                 'uint32_t':         'uint32_t',
                 'int32_t':          'int32_t',
+                'int64_t':          'int64_t',
                 'int8_t':           'int8_t',
                 'int16_t':          'int16_t',
                 'bool':             'bool',
                 's-float':          'float',
                 'stl-string':       'std::string',
+                'ptr-string':       'char *',
                 'stl-bit-vector':   'std::vector<bool>',
                 'df-flagarray':     'df::flagarray',
                 'df-array':         'df::array' }
@@ -66,7 +68,17 @@ def dispatch(e, def_type_name = '~none~'):
     if len(e) == 0:
         type_t = e.get('type-name')
         if type_t is None:
-            type_t = def_type_name
+            # sorely needs refactoring.
+            type_t = e.get('pointer-type')
+            if type_t is None:
+                type_t = def_type_name
+            elif type_t in tag_tab:
+                type_t = tag_tab[type_t] + '*'
+            elif type_t in df_type_tab:
+                type_t = df_type_tab[type_t] + '*'
+            elif not type_t.endswith('_t'):
+                #print("dispatch(): using kludge on {}".format(type_t))
+                type_t = 'df::' + type_t + '*'
         elif type_t == 'pointer':
             type_t = 'void *'
         elif type_t in tag_tab:
@@ -86,8 +98,11 @@ def dispatch(e, def_type_name = '~none~'):
             type_t = df_type_tab.get(type_t, type_t)
         elif e[0].tag == 'static-array':
             type_t, type_decl, deps = staticarray_t(e[0])
-    else: # not encountered yet
+    else: # implicit compound
+        #print("unknown element {} of length {} type-name={} from {}:{}".format(e, 
+        #    len(e), e.get('type-name'), e.get('xmlfilename'), e.sourceline))
         type_t, type_decl, deps = struct_t(e)
+        #print("results in {} {} {}".format(type_t, "\n" + "\n".join(type_decl), deps))
     try:
         return type_t, type_decl, deps
     except NameError:
@@ -121,6 +136,13 @@ def staticarray_t(e):
 
     type_t, type_decl, dependencies = dispatch(e)
     type_t += ' {name}' + cseq
+    tn = e.get('type-name')
+    # epic kludge. this all is in dire need of rewrite.
+    if tn is not None and tn not in tag_tab and tn != 'pointer':
+        dependencies.add(e.get('type-name'))
+        #print("add-dep {}".format(e.get('type-name')))
+        #print("{} is staticarray<{}> deps={} from {}:{}".format(type_t, e.get('type-name'), dependencies,
+        #        e.get('xmlfilename'), e.sourceline))
     return type_t, type_decl, dependencies 
 
 def bitfield_t(e):
@@ -228,6 +250,10 @@ def struct_t(e):
         return "uint8_t {name}[{size}]".format(size = e.get('size'), name = e.get('name', next(unk)))
     def staticstring(e):
         return "char {name}[{size}]".format(size = e.get('size'), name = e.get('name', next(unk)))
+    def ptrstring(e):
+        return "char *{name}".format(name = e.get('name', next(unk)))
+    def stdstring(e):
+        return "std::string {name}".format(name = e.get('name', next(unk)))
     def vmethod(e, classtype_t):
         """ special case, returns strings, do not confuse with other functions """
         if bool(e.get('is-destructor')):
@@ -237,11 +263,7 @@ def struct_t(e):
         rettype_t = e.get('ret-type', 'void')
         for vmp in e:
             if vmp.tag == 'pointer': # no implicit compounds here (in vmeth params). and skip types ftb
-                try:
-                    name = vmp[0].get('comment', next(unk))
-                except IndexError:
-                    name = vmp.get('comment', next(unk))
-                params.append("void *" + str(name))
+                params.append("void *" + str(next(unk)))
             elif vmp.tag in tag_tab:
                 params.append(tag_tab[vmp.tag].format(vmp.tag) + " " + vmp.get('name', next(unk)))
             elif vmp.tag == 'ret-type':
@@ -299,6 +321,10 @@ def struct_t(e):
             rv.append(indent + padding(field) + ';')
         elif field.tag == 'static-string':
             rv.append(indent + staticstring(field) + ';')
+        elif field.tag == 'ptr-string':
+            rv.append(indent + ptrstring(field) + ';')
+        elif field.tag == 'stl-string':
+            rv.append(indent + stdstring(field) + ';')
         elif field.tag == 'pointer':
             t, decls, deps = pointer_t(field)
             rv.extend(map(lambda l: indent + l, decls))
@@ -331,7 +357,7 @@ def struct_t(e):
                     rv.append(indent + 'df::' + f_type_t + f_name + ';')
             dependencies.update(deps)
         else:
-            raise Error(pformat(field.tag, f_type_t))
+            raise Error(pformat((field.tag, f_type_t)))
     rv.extend(static.methods.get(type_t, []))
     iv = e.get('instance-vector')
     if iv is not None:
@@ -345,6 +371,8 @@ def struct_t(e):
         dependencies.update(static.dependencies[type_t])
     except KeyError:
         pass
+    if type_t == 'world_region_feature':
+        print(dependencies)
     rv.append("};")
     return type_t, rv, dependencies
 
@@ -466,6 +494,10 @@ class xD(object):
                 e.getparent().remove(e)
             else:
                 e.tail = e.text = None
+            try:
+                e.set("xmlfilename", fname)
+            except TypeError:
+                pass
         self.woot.extend( etx('*')(t) )
             
     def vomit(self, fname):
