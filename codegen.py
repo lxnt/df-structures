@@ -1,8 +1,8 @@
-#!/usr/bin/python3.2
+#!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 """
 https://github.com/lxnt/df-structures
-Copyright (c) 2012-2012 Alexander Sabourenkov (screwdriver@lxnt.info)
+Copyright (c) 2012-2014 Alexander Sabourenkov (screwdriver@lxnt.info)
 Copyright (c) 2009-2011 Petr Mrázek (peterix@gmail.com)
 
 This software is provided 'as-is', without any express or implied
@@ -51,10 +51,13 @@ tag_tab = {     'uint16_t':         'uint16_t',
                 'int64_t':          'int64_t',
                 'int8_t':           'int8_t',
                 'int16_t':          'int16_t',
-                'bool':             'bool',
                 's-float':          'float',
-                'stl-string':       'std::string',
+                'd-float':          'double',
+                'bool':             'bool',
+                'static-string':    'char',
                 'ptr-string':       'char *',
+                'stl-string':       'std::string',
+
                 'stl-bit-vector':   'std::vector<bool>',
                 'df-flagarray':     'df::flagarray',
                 'df-array':         'df::array' }
@@ -371,8 +374,8 @@ def struct_t(e):
         dependencies.update(static.dependencies[type_t])
     except KeyError:
         pass
-    if type_t == 'world_region_feature':
-        print(dependencies)
+#    if type_t == 'world_region_feature':
+#        print('world_region_feature deps:', dependencies)
     rv.append("};")
     return type_t, rv, dependencies
 
