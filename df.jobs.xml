@@ -1,13 +1,13 @@
 <data-definition>
     <bitfield-type type-name='job_material_category' base-type='uint32_t'>
         <flag-bit name='plant'/>
-        <flag-bit name='wood'/>
+        <flag-bit name='wood' comment='wood log'/>
         <flag-bit name='cloth'/>
         <flag-bit name='silk'/>
         <flag-bit name='leather'/>
         <flag-bit name='bone'/>
         <flag-bit name='shell'/>
-        <flag-bit name='wood2'/>
+        <flag-bit name='wood2' comment='wood material'/>
         <flag-bit name='soap'/>
         <flag-bit name='tooth'/>
         <flag-bit name='horn'/>
@@ -65,9 +65,9 @@
             </comment>
         </flag-bit>
         <flag-bit name='item_lost' comment='set when a Hauled item is removed; causes cancel'/>
-        <flag-bit/>
+        <flag-bit name='noise' count='2' comment='on the sleep job causes thoughts'/>
 
-        <flag-bit/>
+        --
         <flag-bit name='by_manager'/>
         <flag-bit name='store_item'/>
         <flag-bit name='quality' count='3' comment='set by improvement code'/>
@@ -95,7 +95,7 @@
 
         <compound name='pos' type-name='coord'/>
 
-        <int32_t name='completion_timer' init-value='-1' comment='-1 per 10 frames'/>
+        <int32_t name='completion_timer' init-value='-1' comment='-1 every time unit.counters.job_counter is below 0' />
 
         <uint32_t name='unk4' comment='garbage, but serialized'/>
 
@@ -107,6 +107,7 @@
         <enum base-type='int16_t' name='item_type' type-name='item_type' comment='for Bait Trap jobs'/>
         <int16_t name='item_subtype' init-value='-1' comment='for StoreInStockpile: hauler_type'/>
 
+        -- For building construction, bit 0 marks if location was updated:
         <compound name="item_category" type-name='stockpile_group_set'/>
         <int32_t name="hist_figure_id" ref-target='historical_figure'/>
         <compound name='material_category' type-name='job_material_category'/>
@@ -115,23 +116,13 @@
 
         <int32_t name='expire_timer' comment='for stockpiling, +1 per 50 ticks if no worker; del when 20'/>
         <int16_t name='recheck_cntdn' comment='for process_jobs'/>
-        <int16_t name='unk10b_cntdn'/>
+        <int16_t name='wait_timer' comment='for units to leave build sites; to recheck stockpiles'/>
         <int32_t name='unk11' init-value='-1' comment='v0.34.08'/>
 
-        <stl-vector name='items'>
-            <pointer type-name='job_item_ref'/>
-        </stl-vector>
-
-        <stl-vector name='specific_refs'>
-            <pointer type-name='specific_ref'/>
-        </stl-vector>
-        <stl-vector name='general_refs'>
-            <pointer type-name='general_ref'/>
-        </stl-vector>
-
-        <stl-vector name='job_items'>
-            <pointer type-name='job_item'/>
-        </stl-vector>
+        <stl-vector name='items' pointer-type='job_item_ref'/>
+        <stl-vector name='specific_refs' pointer-type='specific_ref'/>
+        <stl-vector name='general_refs' pointer-type='general_ref'/>
+        <stl-vector name='job_items' pointer-type='job_item'/>
 
         <compound name='guide_path' type-name='coord_path' comment='v0.34.08'/>
         <int32_t name='cur_path_index' comment='v0.34.08'/>
@@ -282,9 +273,7 @@
         <compound name="flags1" type-name='job_item_flags1'/>
 
         <pointer name="item_vector">
-            <stl-vector>
-                <pointer type-name='item'/>
-            </stl-vector>
+            <stl-vector pointer-type='item'/>
         </pointer>
 
         <bool name="use_mat_index"/>
@@ -327,15 +316,11 @@
 
         <int32_t name="unk_74"/>
 
-        <stl-vector name='burrows'>
-            <int32_t ref-target='burrow'/>
-        </stl-vector>
+        <stl-vector name='burrows' type-name='int32_t' ref-target='burrow'/>
         <bool name="use_burrows"/>
 
         <pointer name='take_from' comment='v0.34.08'>
-            <stl-vector>
-                <pointer type-name='building'/>
-            </stl-vector>
+            <stl-vector pointer-type='building'/>
         </pointer>
     </struct-type>
 
@@ -373,6 +358,7 @@
     </struct-type>
 
     <enum-type type-name='guild_id'>
+        <enum-item name='None' value='-1'/>
         <enum-item name='Miners'/>
         <enum-item name='Carpenters'/>
         <enum-item name='Masons'/>

@@ -187,9 +187,7 @@
         <stl-vector name='unknown1' comment='empty'/>
         <stl-vector name='unknown2' comment='empty'/>
 
-        <stl-vector name='words' index-refers-to='$global.world.raws.language.words[$]'>
-            <pointer type-name='stl-string'/>
-        </stl-vector>
+        <stl-vector name='words' index-refers-to='$global.world.raws.language.words[$]' pointer-type='stl-string'/>
     </struct-type>
 
     <struct-type type-name='language_symbol'
@@ -249,6 +247,19 @@
                         (apply #'format nil "~@[~A ~]~@[~A ~]~@[~A-~]~A" (get-english 2 5)))
                       (flatten (get-english 6 6)))))))
         </code-helper>
+    </struct-type>
+
+    <struct-type type-name='language_word_table'>
+        <static-array name='words' count='6'>
+            <stl-vector index-refers-to='$$._parent._parent.parts[$$._key][$]'>
+                <int32_t ref-target='language_word'/>
+            </stl-vector>
+        </static-array>
+        <static-array name='parts' count='6'>
+            <stl-vector>
+                <enum base-type='int32_t' type-name='part_of_speech'/>
+            </stl-vector>
+        </static-array>
     </struct-type>
 </data-definition>
 

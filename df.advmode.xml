@@ -45,6 +45,53 @@
         <enum-item name='Unk35'/>
     </enum-type>
 
+    <struct-type type-name='conversation'>
+        <stl-string name='conv_title'/>
+        <enum base-type='int32_t' name='state'>
+            <enum-item name='started'/>
+            <enum-item name='active'/>
+            <enum-item name='finished'/>
+            <enum-item name='quit'/>
+        </enum>
+        <stl-vector type-name='int16_t' name='talk_choices' />
+
+        <int32_t name='unk_30' ref-target='unit'/>
+        <int32_t name='unk_34' ref-target='historical_figure'/>
+        <int32_t name='unk_38'/>
+
+        <int32_t name='unk_3c' ref-target='unit'/>
+        <int32_t name='unk_40' ref-target='historical_figure'/>
+        <int32_t name='unk_44'/>
+
+        <int32_t name='unk_48' ref-target='unit'/>
+        <int32_t name='unk_4c' ref-target='historical_figure'/>
+        <int32_t name='unk_50'/>
+
+        <stl-vector name='unk_54' pointer-type='nemesis_record'/>
+        <stl-vector name='unk_64' pointer-type='historical_entity'/>
+        <int8_t name='unk_74'/>
+        <int32_t name='unk_78'/>
+        <int32_t name='unk_7c'/>
+        <int16_t name='unk_80'/>
+        <stl-vector name='unk_84'/>
+        <stl-vector name='unk_94'/>
+        <stl-vector name='unk_a4'/>
+        <pointer name='location' type-name='building' comment='civzone'/>
+        <int8_t name='unk_b8'/>
+        <int32_t name='unk_bc'/>
+        <stl-vector name='speech'>
+            <pointer>
+                <stl-vector name='text' pointer-type='stl-string' comment='wordwrap'/>
+                <int32_t name='speaker' ref-target='unit'/>
+                <int32_t name='unk_14'/>
+                <int32_t name='unk_18'/>
+                <int16_t name='fg'/>
+                <int16_t name='bg'/>
+                <int16_t name='bright'/>
+            </pointer>
+        </stl-vector>
+    </struct-type>
+
     <struct-type type-name='ui_advmode'>
         <enum base-type='int16_t' name='menu' type-name='ui_advmode_menu'/>
 
@@ -64,10 +111,11 @@
         <padding size='2'/>
         <int32_t name='tick_counter' comment='goes up to XXX'/>
         <int32_t name='frame_counter' comment='goes up to 10000 (ticks?)'/>
-        <int32_t name='unk6'/>
-        <int32_t name='unk7'/>
-        <int32_t name='unk8'/>
-        <int32_t name='unk9'/>
+        <int16_t name='unk6'/>
+        <bool name='sleeping'/>
+        <int32_t name='bogeymen_timer' comment='initialized to 4-7 when the cackling starts'/>
+        <int32_t name='bogeymen_killed'/>
+        <int32_t name='unk9' comment='initialized to 60 when the cackling starts'/>
         <int32_t name='unk10'/>
 
         <stl-vector name='unk11'/>
@@ -81,15 +129,9 @@
         <int32_t name='unk18'/>
         <int32_t name='unk19'/>
 
-        <stl-vector name='unk20'>
-            <int32_t ref-target='world_site'/>
-        </stl-vector>
-        <stl-vector name='unk21'>
-            <int32_t/>
-        </stl-vector>
-        <stl-vector name='unk22'>
-            <int32_t/>
-        </stl-vector>
+        <stl-vector name='unk20' type-name='int32_t' ref-target='world_site'/>
+        <stl-vector name='unk21' type-name='int32_t'/>
+        <stl-vector name='unk22' type-name='int32_t'/>
 
         <int16_t name='unk23'/>
         <int16_t name='unk24'/>
@@ -104,49 +146,7 @@
                 <int32_t/>
             </pointer>
         </stl-vector>
-        <stl-vector name='conversations'>
-            <pointer>
-                <stl-string name='conv_title'/>
-                <int32_t name='state'/> 0=started, 1=active, 2=finished
-                <stl-vector type-name='int16_t' name='talk_choices' />
-
-                <int32_t ref-target='unit'/>
-                <int32_t ref-target='historical_figure'/>
-                <int32_t/>
-
-                <int32_t ref-target='unit'/>
-                <int32_t ref-target='historical_figure'/>
-                <int32_t/>
-
-                <int32_t ref-target='unit'/>
-                <int32_t ref-target='historical_figure'/>
-                <int32_t/>
-
-                <stl-vector pointer-type='nemesis_record'/>
-                <stl-vector pointer-type='historical_entity'/>
-                <int8_t/>
-                <int32_t/>
-                <int32_t/>
-                <int16_t/>
-                <stl-vector/>
-                <stl-vector/>
-                <stl-vector/>
-                <pointer type-name='building' comment='civzone'/>
-                <int8_t/>
-                <int32_t/>
-                <stl-vector name='speech'>
-                    <pointer>
-                        <stl-vector name='text' pointer-type='stl-string'/>
-                        <int32_t name='speaker' ref-target='unit'/>
-                        <int32_t/>
-                        <int32_t/>
-                        <int16_t name='fg'/>
-                        <int16_t name='bg'/>
-                        <int16_t name='bright'/>
-                    </pointer>
-                </stl-vector>
-            </pointer>
-        </stl-vector>
+        <stl-vector name='conversations' pointer-type='conversation'/>
 
         <int32_t name="unk_e0"/>
         <int8_t name="unk_e4"/>
@@ -164,9 +164,7 @@
         <stl-vector name='unk28'/>
         <stl-vector name='unk29'/>
         <stl-vector name='unk30'/>
-        <stl-vector name='actions'>
-            <pointer type-name='adventure_movement_option'/>
-        </stl-vector>
+        <stl-vector name='actions' pointer-type='adventure_movement_option'/>
         <stl-vector name='unk31' comment='v0.34.08'/>
 
         <int32_t name='unk32'/>
@@ -179,15 +177,11 @@
         <int32_t name='unk36'/>
 
         <compound name='companions'>
-            <stl-vector name='unit'>
-                <pointer type-name='unit'/>
-            </stl-vector>
+            <stl-vector name='unit' pointer-type='unit'/>
             <stl-bit-vector name='unit_visible'/>
             <compound name='unit_position' type-name='coord_path'/>
 
-            <stl-vector name='all_histfigs' comment='includes dead'>
-                <int32_t ref-target='historical_figure'/>
-            </stl-vector>
+            <stl-vector name='all_histfigs' comment='includes dead' type-name='int32_t' ref-target='historical_figure'/>
         </compound>
 
         <stl-vector name='unk37'/>
@@ -215,33 +209,58 @@
         <pointer name='next' type-name='quest_list_link'/>
     </struct-type>
 
+    <enum-type type-name='adv_task_type' base-type='int32_t'>
+        <enum-item name='KillNemesis'/>
+        <enum-item name='SeekNemesis'/>
+    </enum-type>
+
     <class-type type-name='adv_task' original-name='taskst' key-field='id'>
         <pointer name='link' type-name='quest_list_link'/>
 
         <int32_t name='id'/>
 
         <int32_t name='quest_giver_id' ref-target='historical_figure'/>
-        <int32_t ref-target='world_site'/>
-        <int32_t/>
+        <int32_t name='giver_site' ref-target='world_site'/>
+        <int32_t name='unk1'/>
         <int32_t name='adventurer_id' ref-target='historical_figure'/>
-        <int32_t/>
+        <int32_t name='unk2'/>
 
         <compound name='target_pos' type-name='coord2d'/>
         <compound name='giver_pos' type-name='coord2d'/>
 
-        <int32_t/>
-        <int32_t/>
+        -- 1/16 fraction of target_pos
+        <int16_t name='target_x1' init-value='-1'/>
+        <int16_t name='target_x2' init-value='-1'/>
+        <int16_t name='target_y1' init-value='-1'/>
+        <int16_t name='target_y2' init-value='-1'/>
+
+        <virtual-methods>
+            <vmethod name='getType' ret-type='adv_task_type'/>
+            <vmethod name='getStatus' ret-type='int32_t' comment='0 done, 1 not found, 2 not killed?'/>
+            <vmethod name='getDescription'> <pointer type-name='stl-string'/> </vmethod>
+            <vmethod name='onKill'> <int32_t name='histfig_id'/> </vmethod>
+            <vmethod name='updateTargetPos'/>
+
+            <vmethod name='getGoalSite' ret-type='int32_t'/>
+            <vmethod name='getTargetHistFig' ret-type='int32_t'/>
+            <vmethod name='read_file'>
+                <pointer comment='file_compressorst'/>
+                <int32_t name='loadversion'/>
+            </vmethod>
+            <vmethod name='write_file'> <pointer comment='file_compressorst'/> </vmethod>
+            <vmethod is-destructor='true'/>
+        </virtual-methods>
     </class-type>
 
     <class-type type-name='task_kill_nemesisst' inherits-from='adv_task'>
-        <int32_t/>
+        <int32_t name='unk3'/>
         <int32_t name='target_site' ref-target='world_site'/>
         <int32_t name='target_hfid' ref-target='historical_figure'/>
-        <int8_t/>
+        <bool name='is_killed'/>
     </class-type>
 
     <class-type type-name='task_seek_nemesisst' inherits-from='adv_task'>
-        <int32_t/>
+        <int32_t name='unk3'/>
         <int32_t name='target_site' ref-target='world_site'/>
         <int32_t name='target_hfid' ref-target='historical_figure'/>
     </class-type>

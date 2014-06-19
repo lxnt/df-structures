@@ -27,20 +27,20 @@
         <flag-bit name='artifact' comment='Artifact'/>
         <flag-bit name='forbid' comment='Forbidden item'/>
 
-        <flag-bit name='unk20' comment='unknown, unseen'/>
+        <flag-bit name='already_uncategorized' comment='unknown, unseen'/>
         <flag-bit name='dump' comment='Designated for dumping'/>
         <flag-bit name='on_fire' comment='Indicates if item is on fire, Will Set Item On Fire if Set!'/>
         <flag-bit name='melt' comment='Designated for melting, if applicable'/>
 
         <flag-bit name='hidden' comment='Hidden item'/>
         <flag-bit name='in_chest' comment='Stored in chest/part of well?'/>
-        <flag-bit name='unk26' comment='unknown, unseen'/>
+        <flag-bit name='use_recorded' comment='transient in unit.used_items update'/>
         <flag-bit name='artifact_mood' comment='created by mood/named existing item'/>
 
         <flag-bit name='temps_computed' comment='melting/boiling/ignite/etc. points'/>
         <flag-bit name='weight_computed'/>
         <flag-bit name='unk30' comment='unknown, unseen'/>
-        <flag-bit name='unk31' comment='created by underground critters?'/>
+        <flag-bit name='from_worldgen' comment='created by underground critters?'/>
     </bitfield-type>
 
     <bitfield-type type-name='item_flags2'>
@@ -134,14 +134,10 @@
         <uint32_t name='age'/>
         <int32_t name='id'/>
 
-        <stl-vector name='specific_refs'>
-            <pointer type-name='specific_ref'/>
-        </stl-vector>
-        <stl-vector name='general_refs'>
-            <pointer type-name='general_ref'/>
-        </stl-vector>
+        <stl-vector name='specific_refs' pointer-type='specific_ref'/>
+        <stl-vector name='general_refs' pointer-type='general_ref'/>
 
-        <int32_t name='world_data_id' init-value='-1' comment='v0.34.01'/>
+        <int32_t name='world_data_id' ref-target='world_object_data' comment='v0.34.01'/>
         <int32_t name='world_data_subid' init-value='-1' comment='v0.34.01'/>
 
         <uint8_t name='stockpile_countdown' comment='-1 per 50 frames; then check if needs moving'/>
@@ -248,7 +244,7 @@
 
             -- 54
 
-            <vmethod/>
+            <vmethod ret-type='int8_t' name='getWeaponSize' comment='weapon racks have capacity 5'/>
             <vmethod ret-type='int16_t' name='getWear'/>
             <vmethod name='setWear'> <int16_t/> </vmethod>
             <vmethod ret-type='int32_t' name='getMaker'/>
@@ -378,7 +374,10 @@
             <vmethod ret-type='bool' name='isSandBearing'/>
             <vmethod ret-type='bool' name='isLyeBearing'/>
             <vmethod ret-type='bool' name='isAnimalProduct'/>
-            <vmethod/>
+            <vmethod name='getStorageInfo'>
+                <pointer type-name='int32_t' name='item_type'/>
+                <pointer type-name='int32_t' name='material_category'/>
+            </vmethod>
             <vmethod ret-type='bool' name='addWear'>
                 <int32_t name='delta'/> <bool name='simple'/> <bool name='lose_masterwork'/>
             </vmethod>
@@ -529,7 +528,7 @@
             <vmethod ret-type='bool' name='hasImprovements'/> any at all
             <vmethod ret-type='bool' name='isImproved'/>
             <vmethod name='getMagic'>
-                <ret-type><pointer><stl-vector><pointer type-name='item_magicness'/></stl-vector></pointer></ret-type>
+                <ret-type><pointer><stl-vector pointer-type='item_magicness'/></pointer></ret-type>
             </vmethod>
 
             -- 186
@@ -545,7 +544,7 @@
             <vmethod name='getItemBasicName' comment='usually just "item"'>
                 <pointer type-name='stl-string'/>
             </vmethod>
-            <vmethod ret-type='int32_t' name='getImprovementsValue'> <int32_t name='entity_id' ref-target='historical_entity'/> </vmethod>
+            <vmethod ret-type='int32_t' name='getImprovementsValue'> <pointer type-name='caravan_state' name='caravan'/> </vmethod>
             <vmethod ret-type='bool' name='isExtractBearingFish'/>
 
             <vmethod ret-type='bool' name='isExtractBearingVermin'/>
@@ -579,7 +578,7 @@
             <vmethod/>
             <vmethod/>
 
-            <vmethod ret-type='int32_t' name='getThreadDyeValue'> <int32_t comment='unused'/> </vmethod>
+            <vmethod ret-type='int32_t' name='getThreadDyeValue'> <pointer type-name='caravan_state' name='caravan'/> </vmethod>
             <vmethod name='getColorAndShape'>
                 <pointer name='colors'><stl-vector type-name='int16_t'/></pointer>
                 <pointer name='shapes'><stl-vector type-name='int16_t'/></pointer>
@@ -631,9 +630,7 @@
 
         -- Wielders
 
-        <stl-vector name="slayers">
-            <int32_t ref-target='historical_figure'/>
-        </stl-vector>
+        <stl-vector name="slayers" type-name='int32_t' ref-target='historical_figure'/>
         <stl-vector name="slayer_kill_counts" type-name='int32_t'/>
     </struct-type>
 
@@ -656,15 +653,11 @@
         </pointer>
 
         <pointer name='magic'>
-            <stl-vector>
-                <pointer type-name='item_magicness'/>
-            </stl-vector>
+            <stl-vector pointer-type='item_magicness'/>
         </pointer>
 
         <pointer name='contaminants'>
-            <stl-vector>
-                <pointer type-name='contaminant'/>
-            </stl-vector>
+            <stl-vector pointer-type='contaminant'/>
         </pointer>
 
         <compound name='temperature' type-name='temperaturest'/>
@@ -699,9 +692,7 @@
 
     <class-type type-name='item_constructed' inherits-from='item_crafted'
                 original-name='item_constructedst'>
-        <stl-vector name='improvements'>
-            <pointer type-name='itemimprovement'/>
-        </stl-vector>
+        <stl-vector name='improvements' pointer-type='itemimprovement'/>
     </class-type>
 
     -- BODY COMPONENT
@@ -720,17 +711,23 @@
         <flag-bit name='skin_damage' comment='brown'/>
         <flag-bit name='motor_nerve_severed'/>
         <flag-bit name='sensory_nerve_severed'/>
-        <flag-bit/>
+        <flag-bit name='spilled_guts'/>
 
         <flag-bit name='has_splint'/>
         <flag-bit name='has_bandage'/>
         <flag-bit name='has_plaster_cast'/>
-        <flag-bit/>
+        <flag-bit name='grime' count='3'/>
 
-        <flag-bit/>
-        <flag-bit/>
-        <flag-bit comment='seen e.g. on ribs smashed by blunt attack, but quickly disappeared'/>
-        <flag-bit/>
+        <flag-bit name='severed_or_jammed'
+                  comment='seen e.g. on ribs smashed by blunt attack, but quickly disappeared'/>
+        <flag-bit name='under_shell'/>
+
+        <flag-bit name='is_shell'/>
+    </bitfield-type>
+
+    <bitfield-type type-name='body_layer_status'>
+        <flag-bit name='gone'/>
+        <flag-bit name='leaking'/>
     </bitfield-type>
 
     <struct-type type-name='body_component_info'>
@@ -739,14 +736,22 @@
 
         <stl-vector name='numbered_masks' type-name='uint32_t'
                     comment='1 bit per instance of a numbered body part'/>
+        <stl-vector name='nonsolid_remaining' type-name='uint32_t' comment='0-100%'
+                    index-refers-to='$$._global._upglobal.caste.ref-target.body_info.nonsolid_layers[$].refers-to'/>
 
-        <stl-vector name='body_layer_328' type-name='uint32_t'/>
-        <stl-vector name='body_layer_338' type-name='uint32_t'
-                    comment='if 1, gone'/> // 238*0
-        <stl-vector name='body_layer_348' type-name='uint32_t'/> // 238*0
-        <stl-vector name='body_layer_358' type-name='uint32_t'/> // 238*0
-        <stl-vector name='body_layer_368' type-name='uint32_t'/> // 238*0
-        <stl-vector name='body_layer_378' type-name='uint32_t'/> // 238*0
+        <stl-vector name='layer_status' type-name='body_layer_status'
+                    index-refers-to='$$._global._upglobal.caste.ref-target.body_info.layer_idx[$].refers-to'/>
+        <stl-vector name='layer_wound_area' type-name='uint32_t'
+                    index-refers-to='$$._global._upglobal.caste.ref-target.body_info.layer_idx[$].refers-to'/>
+
+        Surface percentages for cuts/fractures, dents and effects (such as
+        bruises, burns, frostbite, melting, freezing, necrosis, and blistering)
+        <stl-vector name='layer_cut_fraction' type-name='uint32_t' comment='0-10000'
+                    index-refers-to='$$._global._upglobal.caste.ref-target.body_info.layer_idx[$].refers-to'/>
+        <stl-vector name='layer_dent_fraction' type-name='uint32_t' comment='0-10000'
+                    index-refers-to='$$._global._upglobal.caste.ref-target.body_info.layer_idx[$].refers-to'/>
+        <stl-vector name='layer_effect_fraction' type-name='uint32_t' comment='0-1000000000'
+                    index-refers-to='$$._global._upglobal.caste.ref-target.body_info.layer_idx[$].refers-to'/>
     </struct-type>
 
     <struct-type type-name='body_size_info'>
@@ -804,12 +809,12 @@
 
             <compound name='size_info' type-name='body_size_info'/>
 
-            <stl-vector name='unk_194' type-name='int32_t'/>
+            <stl-vector name='body_part_relsize' type-name='int32_t' comment='=unit.enemy.body_part_relsize'/>
             <stl-vector name='body_modifiers' type-name='int32_t'
                         index-refers-to='$$._global.caste.ref-target.body_appearance_modifiers[$]'/>
             <stl-vector name='bp_modifiers' type-name='int32_t'
                         index-refers-to='$$._global.caste.ref-target.bp_appearance.modifier_idx[$].refers-to'/>
-            <int32_t name="unk_18c" comment='=unit.appearance.unk_4c8'/>
+            <int32_t name="size_modifier" comment='=unit.appearance.size_modifier'/>
         </compound>
 
         <int32_t name="birth_year"/>
@@ -1042,19 +1047,39 @@
         <int16_t name='caste' ref-target='caste_raw' aux-value='$$.race'/>
         <int32_t name='unk_7c'/>
         <compound name='egg_materials' type-name='material_vec_ref'/>
-        <padding size='44'/>
-        <int32_t comment='v0.34.01, actual offset unknown'/>
-        <int32_t comment='v0.34.06, actual offset unknown'/>
-        <compound name='unk_cc'>
-            <int16_t/>
-            <int16_t/>
-            <int16_t/>
-            <int32_t/>
-            <int32_t/>
-            <int32_t/>
-            <int16_t/>
-        </compound>
-        <int32_t/>
+
+        <bitfield name='egg_flags'>
+            <flag-bit name='fertile' comment='allows the incubation_counter to be checked/incremented'/>
+        </bitfield>
+
+        <int32_t name='incubation_counter' init-value='0'
+                 comment='increments when fertile in unforbidden nestbox, hatch at >= 100800 (3 months)'/>
+
+        <int32_t name='hatchling_civ_id' ref-target='historical_entity'
+                 comment='hatchlings will have this civ_id'/>
+        <int32_t name='hatchling_population_id' ref-target='entity_population'
+                 comment='hatchlings will have this population_id'/>
+        <int32_t name='hatchling_unit_unk_c0' init-value='-1'
+                 comment='hatchlings will have this unit.unk_c0 value'/>
+
+        <pointer name='mothers_genes' type-name='unit_genes' comment='object owned by egg item'/>
+        <int16_t name='mothers_caste' ref-target='caste_raw' aux-value='$$.race'/>
+
+        <pointer name='fathers_genes' type-name='unit_genes' comment='object owned by egg item'/>
+        <int16_t name='fathers_caste' ref-target='caste_raw' aux-value='$$.race'
+                 comment='-1 if no father genes'/>
+
+        <compound name='hatchling_flags1' type-name='unit_flags1'
+                  comment='used primarily for bit_flag:tame'/>
+        <compound name='hatchling_flags2' type-name='unit_flags2'
+                  comment='used primarily for bit_flag:roaming_wilderness_population_source'/>
+        <compound name='hatchling_flags3' type-name='unit_flags3'
+                  comment='not normally used, most/all do not stick'/>
+
+        <enum name='hatchling_training_level' base-type='int32_t'
+              type-name='animal_training_level' init-value='WildUntamed'/>
+        <compound name='hatchling_animal_population' type-name='world_population_ref'/>
+        <int32_t name='hatchling_mother_id' ref-target='unit'/>
         <int32_t name='size'/>
     </class-type>
 

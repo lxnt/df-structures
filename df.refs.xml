@@ -109,8 +109,8 @@
                 <int32_t/>
                 <pointer type-name='stl-string'/>
             </vmethod>
-            <vmethod>
-                <pointer type-name='stl-string'/>
+            <vmethod name='getSecretName' comment='for interactions'>
+                <pointer name='str' type-name='stl-string'/>
             </vmethod>
         </virtual-methods>
     </class-type>
@@ -153,7 +153,7 @@
     <class-type type-name='general_ref_entity_art_image' inherits-from='general_ref'
                 original-name='general_ref_entity_art_imagest'>
         <int32_t name='entity_id' ref-target='historical_entity'/>
-        <int32_t name='unk' comment='points to entity.resources.unk16'/>
+        <int32_t name='index' comment='lookup in entity.resources.art_image_*'/>
     </class-type>
 
     <class-type type-name='general_ref_projectile' inherits-from='general_ref'
@@ -303,7 +303,7 @@
         <enum-item name='VIEWSCREEN'/>
         <enum-item name='UNIT_ITEM_WRESTLE'/>
 
-        <enum-item/>
+        <enum-item name='NULL_REF'/>
         <enum-item name='HIST_FIG'/>
         <enum-item name='SITE'/>
         <enum-item name='ARTIFACT'/>

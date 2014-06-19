@@ -143,6 +143,27 @@
         <int32_t comment='not saved'/>
     </class-type>
 
+    <enum-type type-name='world_site_type' base-type='int16_t'>
+        <enum-item name='PlayerFortress'/>
+        <enum-item name='DarkFortress'/>
+        <enum-item name='Cave'/>
+        <enum-item name='MountainHalls'/>
+        <enum-item name='ForestRetreat'/>
+        <enum-item name='Town'/>
+        <enum-item name='ImportantLocation'/>
+        <enum-item name='LairShrine'/>
+        <enum-item name='Fortress'/>
+        <enum-item name='Camp'/>
+        <enum-item name='Monument'/>
+    </enum-type>
+
+    <enum-type type-name='world_site_flags'>
+        <enum-item name='Undiscovered'/>
+        <enum-item/>
+        <enum-item/>
+        <enum-item name='Town' comment='not hamlet'/>
+    </enum-type>
+
     <struct-type type-name='world_site' key-field='id'
                  instance-vector='$global.world.world_data.sites'>
         <compound name='name' type-name='language_name'/>
@@ -154,33 +175,17 @@
         <int32_t name="old_owner_id" ref-target='historical_entity'/>
         <int32_t name="outcast_id" ref-target='historical_entity' comment='v0.34.01'/>
 
-        <enum base-type='int16_t' name="type">
-            <enum-item name='PlayerFortress'/>
-            <enum-item name='DarkFortress'/>
-            <enum-item name='Cave'/>
-            <enum-item name='MountainHalls'/>
-            <enum-item name='ForestRetreat'/>
-            <enum-item name='Town'/>
-            <enum-item name='Unk6'/>
-            <enum-item name='LairShrine'/>
-            <enum-item name='Fortress'/>
-            <enum-item name='Camp'/>
-            <enum-item name='Monument'/>
-        </enum>
+        <enum base-type='int16_t' name="type" type-name='world_site_type'/>
 
         <compound name='pos' type-name='coord2d'/>
 
         <int32_t name="id"/>
 
-        <stl-vector name="nemesis" comment='could also be units - they happen to coincide here'>
-            <int32_t ref-target='nemesis_record'/>
-        </stl-vector>
+        <stl-vector name="nemesis" type-name='int32_t' ref-target='nemesis_record'/>
 
         <stl-vector name="unk_94"/>
 
-        <stl-vector name="animals">
-            <pointer type-name='world_population'/>
-        </stl-vector>
+        <stl-vector name="animals" pointer-type='world_population'/>
 
         <stl-vector name="inhabitants" pointer-type='world_site_inhabitant'/>
 
@@ -227,11 +232,9 @@
             </pointer>
         </stl-vector>
 
-        <df-flagarray name='flags'/>
+        <df-flagarray name='flags' index-enum='world_site_flags'/>
 
-        <stl-vector name="buildings">
-            <pointer type-name='abstract_building'/>
-        </stl-vector>
+        <stl-vector name="buildings" pointer-type='abstract_building'/>
 
         <int32_t name="next_building_id"/>
         <int32_t name="created_tick"/>
@@ -243,9 +246,10 @@
 
         <pointer name="realization" type-name='world_site_realization'/>
 
-        <pointer name="unk_184">
-            <int32_t name="unk_0"/>
-            <int16_t name="unk_4"/>
+        <pointer name="subtype_info">
+            <int16_t name="is_tower" comment='1 => not fortress'/>
+            <int16_t name="is_monument" comment='not tomb'/>
+            <int16_t name="lair_type" comment='2 monument, 3 shrine'/>
             <stl-vector name="unk_8"/>
             <int32_t name="unk_14"/>
             <int32_t name="unk_18"/>
@@ -394,13 +398,20 @@
         <pointer name="effect" type-name='interaction_effect'/>
     </struct-type>
 
-    <struct-type type-name='site_realization_building'>
-        <int32_t name="index"/>
+    <struct-type type-name='site_realization_building' key-field='id'>
+        <int32_t name="id"/>
+
+        <code-helper name='find-instance'>
+            (find-by-id $(find-instance $world_site $$).realization.buildings $id $)
+        </code-helper>
+
         <int32_t name="unk_4"/>
-        <int32_t name="unk_8"/>
-        <int32_t name="unk_c"/>
-        <int32_t name="unk_10"/>
-        <int32_t name="unk_14"/>
+
+        <int32_t name="min_x" comment='in tiles relative to site'/>
+        <int32_t name="min_y"/>
+        <int32_t name="max_x"/>
+        <int32_t name="max_y"/>
+
         <int32_t name="unk_18"/>
         <stl-vector name="inhabitants" pointer-type='site_building_inhabitant'/>
         <int32_t name="unk_2c"/>

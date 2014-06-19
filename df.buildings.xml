@@ -167,6 +167,7 @@
         <flag-bit name='justice'/>
         <flag-bit name='almost_deleted' comment='when requesting delete while in_update'/>
         <flag-bit name='in_update'/>
+        <flag-bit name='from_worldgen'/>
     </bitfield-type>
 
     <bitfield-type type-name='door_flags' base-type='uint16_t'>
@@ -238,28 +239,23 @@
         <int16_t name='race' ref-target='creature_raw'/>
         <int32_t name='id' init-value='-1'/>
 
-        <stl-vector name='jobs'>
-            <pointer type-name='job'/>
-        </stl-vector>
-        <stl-vector name='specific_refs'>
-            <pointer type-name='specific_ref'/>
-        </stl-vector>
-        <stl-vector name='general_refs'>
-            <pointer type-name='general_ref'/>
-        </stl-vector>
+        <stl-vector name='jobs' pointer-type='job'/>
+        <stl-vector name='specific_refs' pointer-type='specific_ref'/>
+        <stl-vector name='general_refs' pointer-type='general_ref'/>
 
         <bool name='is_room'/>
 
-        <stl-vector name='children' comment='other buildings within this room'>
-            <pointer type-name='building'/>
-        </stl-vector>
-        <stl-vector name='parents' comment='rooms this building belongs to'>
-            <pointer type-name='building'/>
-        </stl-vector>
+        <stl-vector name='children' pointer-type='building' comment='other buildings within this room'/>
+        <stl-vector name='parents' pointer-type='building' comment='rooms this building belongs to'/>
 
         <pointer type-name='unit' name='owner'/>
 
-        <stl-vector name='unk7' type-name='pointer'/>
+        <stl-vector name='job_claim_suppress' comment='after Remv Cre, prevents unit from taking jobs at building'>
+            <pointer>
+                <pointer name='unit' type-name='unit'/>
+                <int32_t name='timer'/>
+            </pointer>
+        </stl-vector>
         <stl-string name='name'/>
 
         <stl-vector name='activities'>
@@ -269,7 +265,7 @@
             </pointer>
         </stl-vector>
 
-        <int32_t name='world_data_id' init-value='-1' comment='v0.34.01'/>
+        <int32_t name='world_data_id' ref-target='world_object_data' comment='v0.34.01'/>
         <int32_t name='world_data_subid' init-value='-1' comment='v0.34.01'/>
 
         <virtual-methods>
@@ -421,7 +417,7 @@
             <vmethod name='deconstructItems'> <bool name='noscatter'/> <bool name='lost'/> </vmethod>
 
             <vmethod name='cleanupMap'/>
-            <vmethod/>
+            <vmethod ret-type='bool' name='isFireSafe' comment='checks contained_items[0] for FIREIMMUNE'><int8_t name='fire_type'/></vmethod>
             <vmethod name='fillSidebarMenu'/>
             <vmethod ret-type='bool' name='isForbidden'/>
             <vmethod ret-type='bool' name='isHidden'/>
@@ -430,13 +426,15 @@
 
             <vmethod ret-type='bool' name='isVisibleInUI'
                      comment='not hidden, or hide/unhide UI mode'/>
-            <vmethod/>
+            <vmethod ret-type='bool' name='isVisibleInViewport' comment='checks coordinates, calls isVisibleInUI and checks window_xy'>
+                <pointer name='viewport' type-name='map_viewport'/>
+            </vmethod>
             <vmethod name='getDrawExtents'>
                 <pointer name='buffer' type-name='building_drawbuffer'/>
             </vmethod>
             <vmethod name='drawBuilding'>
                 <pointer name='buffer' type-name='building_drawbuffer'/>
-                <pointer name='unknown'/>
+                <int16_t name='z_offset' comment='building_wellst only'/>
             </vmethod>
             <vmethod name='setSquadUse'>
                 <int32_t name='squad'/> <uint32_t comment='squad_use_flags.whole'/>
@@ -444,7 +442,7 @@
 
             <vmethod name='getSquads'>
                 <ret-type>
-                    <pointer><stl-vector><pointer type-name='building_squad_use'/></stl-vector></pointer>
+                    <pointer><stl-vector pointer-type='building_squad_use'/></pointer>
                 </ret-type>
             </vmethod>
             <vmethod name='getSpecificSquad' ret-type='int32_t'/>
@@ -461,18 +459,10 @@
     -- stockpile --
 
     <struct-type type-name='stockpile_links'>
-        <stl-vector name='give_to_pile'>
-            <pointer type-name='building'/>
-        </stl-vector>
-        <stl-vector name='take_from_pile'>
-            <pointer type-name='building'/>
-        </stl-vector>
-        <stl-vector name='give_to_workshop'>
-            <pointer type-name='building'/>
-        </stl-vector>
-        <stl-vector name='take_from_workshop'>
-            <pointer type-name='building'/>
-        </stl-vector>
+        <stl-vector name='give_to_pile' pointer-type='building'/>
+        <stl-vector name='take_from_pile' pointer-type='building'/>
+        <stl-vector name='give_to_workshop' pointer-type='building'/>
+        <stl-vector name='take_from_workshop' pointer-type='building'/>
     </struct-type>
 
     <class-type type-name='building_stockpilest' inherits-from='building'>
@@ -485,9 +475,7 @@
         <stl-vector name='container_type'>
             <enum base-type='int16_t' type-name='item_type'/>
         </stl-vector>
-        <stl-vector name='container_item_id'>
-            <int32_t ref-target='item'/>
-        </stl-vector>
+        <stl-vector name='container_item_id' type-name='int32_t' ref-target='item'/>
         <stl-vector name='container_x' type-name='int16_t'/>
         <stl-vector name='container_y' type-name='int16_t'/>
 
@@ -496,9 +484,7 @@
         <int32_t name='use_links_only'/>
         <int32_t name='stockpile_number' init-value='-1'/>
 
-        <stl-vector name='linked_stops'>
-            <pointer type-name='hauling_stop'/>
-        </stl-vector>
+        <stl-vector name='linked_stops' pointer-type='hauling_stop'/>
     </class-type>
 
     -- zone --
@@ -556,14 +542,9 @@
     </enum-type>
 
     <class-type type-name='building_civzonest' inherits-from='building'>
-        <stl-vector name='assigned_creature'>
-            <int32_t ref-target='unit' comment='pretty sure not histfig'/>
-        </stl-vector>
-        <stl-vector name='assigned_vermin'>
-            <int32_t ref-target='item'/>
-        </stl-vector>
-        <enum base-type='int16_t' name="type" type-name='civzone_type'/>
-        <int16_t/>
+        <stl-vector name='assigned_units' type-name='int32_t' ref-target='unit'/>
+        <stl-vector name='assigned_items' type-name='int32_t' ref-target='item'/>
+        <enum base-type='int32_t' name="type" type-name='civzone_type' comment='only saved as int16'/>
         <bitfield name='zone_flags' base-type='uint32_t'>
             <flag-bit name='water_source'/>
             <flag-bit name='garbage_dump'/>
@@ -578,7 +559,7 @@
             <flag-bit name='animal_training'/>
         </bitfield>
         <int32_t init-value='-1'/>
-        <int32_t init-value='-1'/>
+        <int32_t name="abstract_building_id" init-value='-1' ref-target='abstract_building'/>
         <int32_t init-value='-1'/>
         <int32_t init-value='-1'/>
         <int32_t name='zone_num' init-value='-1'/>
@@ -617,10 +598,10 @@
     <struct-type type-name='building_design'>
         <int32_t name='architect' ref-target='historical_figure'/>
         <int32_t name='unk2' init-value='-1'/>
-        <int16_t name='unk3'/>
+        <int16_t name='design_skill'/>
         <int32_t name='builder1' ref-target='historical_figure'/>
         <int32_t name='unk5' init-value='-1'/>
-        <int16_t name='unk6'/>
+        <int16_t name='build_skill'/>
         <int16_t name='build_timer1' comment='+1 per 10 frames while building'/>
         <int32_t name='builder2' ref-target='historical_figure'/>
         <int16_t name='build_timer2'/>
@@ -631,8 +612,8 @@
             <flag-bit name='built'/>
             <flag-bit name='designed'/>
         </bitfield>
-        <int32_t name='unk11'/>
-        <int32_t name='unk12'/>
+        <int32_t name='hitpoints'/>
+        <int32_t name='max_hitpoints'/>
     </struct-type>
 
     -- workshops --
@@ -691,9 +672,7 @@
     </enum-type>
 
     <struct-type type-name='workshop_profile'>
-        <stl-vector name="permitted_workers">
-            <int32_t ref-target='unit'/>
-        </stl-vector>
+        <stl-vector name="permitted_workers" type-name='int32_t' ref-target='unit'/>
         <int32_t name="min_level"/>
         <int32_t name="max_level" init-value='3000'/>
     </struct-type>
@@ -728,9 +707,7 @@
     <class-type type-name='building_armorstandst' inherits-from='building_actual'>
         <int16_t name='unk_c0'/>
 
-        <stl-vector name='squads'>
-            <pointer type-name='building_squad_use'/>
-        </stl-vector>
+        <stl-vector name='squads' pointer-type='building_squad_use'/>
         <int32_t name='specific_squad' ref-target='squad'/>
         <int32_t name='specific_position' init-value='-1'/>
     </class-type>
@@ -746,9 +723,7 @@
     </class-type>
 
     <struct-type type-name='building_users'>
-        <stl-vector name='unit'>
-            <int32_t ref-target='unit'/>
-        </stl-vector>
+        <stl-vector name='unit' type-name='int32_t' ref-target='unit'/>
         <stl-vector name='mode' type-name='int16_t'/>
     </struct-type>
 
@@ -757,9 +732,7 @@
             <flag-bit name='barracks'/>
             <flag-bit name='dormitory'/>
         </bitfield>
-        <stl-vector name='squads'>
-            <pointer type-name='building_squad_use'/>
-        </stl-vector>
+        <stl-vector name='squads' pointer-type='building_squad_use'/>
         <int32_t name='specific_squad' ref-target='squad'/>
         <int32_t name='specific_position' init-value='-1'/>
         <compound name='users' type-name='building_users'/>
@@ -767,9 +740,7 @@
 
     <class-type type-name='building_boxst' inherits-from='building_actual'>
         <int16_t/>
-        <stl-vector name='squads'>
-            <pointer type-name='building_squad_use'/>
-        </stl-vector>
+        <stl-vector name='squads' pointer-type='building_squad_use'/>
         <int32_t name='specific_squad' ref-target='squad'/>
         <int32_t name='specific_position' init-value='-1'/>
     </class-type>
@@ -789,20 +760,14 @@
 
     <class-type type-name='building_cabinetst' inherits-from='building_actual'>
         <int16_t/>
-        <stl-vector name='squads'>
-            <pointer type-name='building_squad_use'/>
-        </stl-vector>
+        <stl-vector name='squads' pointer-type='building_squad_use'/>
         <int32_t name='specific_squad' ref-target='squad'/>
         <int32_t name='specific_position' init-value='-1'/>
     </class-type>
 
     <class-type type-name='building_cagest' inherits-from='building_actual'>
-        <stl-vector name='assigned_creature'>
-            <int32_t ref-target='unit' comment='pretty sure not histfig'/>
-        </stl-vector>
-        <stl-vector name='assigned_vermin'>
-            <int32_t ref-target='item'/>
-        </stl-vector>
+        <stl-vector name='assigned_units' type-name='int32_t' ref-target='unit'/>
+        <stl-vector name='assigned_items' type-name='int32_t' ref-target='item'/>
         <bitfield base-type='uint16_t' name='cage_flags'>
             <flag-bit name='triggered'/>
         </bitfield>
@@ -911,16 +876,18 @@
         <int16_t name='close_timer'/>
     </class-type>
 
+    <bitfield-type type-name='hive_flags' base-type='uint32_t'>
+        <flag-bit name='do_install'/>
+        <flag-bit name='do_gather'/>
+        <flag-bit name='ready_split'/>
+    </bitfield-type>
+
     <class-type type-name='building_hivest' inherits-from='building_actual'>
-        <bitfield name='flags' base-type='int32_t' init-value='3'>
-            <flag-bit name='do_install'/>
-            <flag-bit name='do_gather'/>
-            <flag-bit name='ready_split'/>
-        </bitfield>
-        <int32_t/>
-        <int32_t/>
-        <int32_t/>
-        <int32_t/>
+        <compound name='hive_flags' type-name='hive_flags'/>
+        <int32_t name='split_timer' comment='up to 100800'/>
+        <int32_t name='activity_timer' comment='up to 100800000; checks timer%hive_product.time[i]==0'/>
+        <int32_t name='install_timer' comment='down from 1200'/>
+        <int32_t name='gather_timer' comment='down from 1200'/>
     </class-type>
 
     <class-type type-name='building_nestst' inherits-from='building_actual'/>
@@ -1053,9 +1020,7 @@
             <flag-bit name='disabling'/>
             <flag-bit name='enabling'/>
         </bitfield>
-        <stl-vector name='linked_mechanisms'>
-            <pointer type-name='item'/>
-        </stl-vector>
+        <stl-vector name='linked_mechanisms' pointer-type='item'/>
         <stl-vector name='observed_by_civs' type-name='int32_t' ref-target='historical_entity'/>
 
         <compound name='profile' type-name='workshop_profile'/>
@@ -1086,20 +1051,19 @@
     <class-type type-name='building_weaponrackst' inherits-from='building_actual'>
         <int16_t name='unk_c0'/>
 
-        <stl-vector name='squads'>
-            <pointer type-name='building_squad_use'/>
-        </stl-vector>
+        <stl-vector name='squads' pointer-type='building_squad_use'/>
         <int32_t name='specific_squad' ref-target='squad'/>
     </class-type>
 
     <class-type type-name='building_wellst' inherits-from='building_actual'>
         <bitfield name='well_flags' base-type='int16_t'>
             <flag-bit name='lowering'/>
+            <flag-bit name='just_raised'/>
         </bitfield>
         <int8_t/>
         <int16_t name='bucket_z'/>
-        <int8_t name='bucket_timer'/>
-        <int16_t name='unk_timer'/>
+        <int8_t name='bucket_timer' comment='0-9; counts up when raising, down when lowering'/>
+        <int16_t name='check_water_timer'/>
     </class-type>
 
     <class-type type-name='building_windowst' inherits-from='building_actual'>

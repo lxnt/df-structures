@@ -1,36 +1,4 @@
 <data-definition>
-    <struct-type type-name='dipscript_info'>
-        <int32_t name='unk1' comment='uninit'/>
-        <stl-string name='script_file' comment='data/dipscript/dwarf_liaison'/>
-        <stl-vector name='script_steps' type-name='pointer'/>
-        <stl-vector name='unknown' comment='null'/>
-        <stl-string name='code' comment='DWARF_LIAISON etc'/>
-        <code-helper name='describe'>$.code</code-helper>
-    </struct-type>
-
-    <struct-type type-name='dipscript_popup_unit'>
-        <int32_t name='unk0'/>
-        <pointer type-name='unit' name='unit'/>
-        <int32_t name='unk8'/>
-        <int32_t name='unkC'/>
-        <bitfield name='flags'>
-            <flag-bit name='unk0'/>
-            <flag-bit name='unk1'/>
-            <flag-bit name='unk2'/>
-            <flag-bit name='unk3'/>
-            <flag-bit name='unk4'/>
-        </bitfield>
-    </struct-type>
-
-    <struct-type type-name='dipscript_popup'>
-        <int32_t name='unk0'/>
-        <pointer name='unk4' type-name='dipscript_popup_unit'/>
-        <bitfield name='flags'>
-            <flag-bit name='unk0'/>
-            <flag-bit name='unk1'/>
-        </bitfield>
-    </struct-type>
-
     <struct-type type-name='burrow' key-field='id' instance-vector='$global.ui.burrows.list'>
         <int32_t name='id'/>
         <stl-string name='name'/>
@@ -47,9 +15,7 @@
         <stl-vector name='block_y' type-name='int32_t'/>
         <stl-vector name='block_z' type-name='int32_t'/>
 
-        <stl-vector name='units'>
-            <int32_t ref-target='unit'/>
-        </stl-vector>
+        <stl-vector name='units' type-name='int32_t' ref-target='unit'/>
     </struct-type>
 
     <struct-type type-name='ui_hotkey'>
@@ -164,9 +130,7 @@
         <compound name='tax_collection'>
             <int16_t name='state'/>
             <int32_t/>
-            <stl-vector name='rooms'>
-                <pointer type-name='building'/>
-            </stl-vector>
+            <stl-vector name='rooms' pointer-type='building'/>
             <int32_t/>
             <int32_t comment='probably for tax collector'/>
             <int32_t comment='probably for guard1'/>
@@ -184,14 +148,12 @@
         </compound>
 
         <int32_t/>
-        <int32_t/>
-        <int32_t/>
-        <int32_t/>
+        <int32_t name='manager_cooldown' comment='0-1008'/>
+        <int32_t name='bookkeeper_cooldown' comment='0-1008'/>
+        <int32_t name='bookkeeper_precision'/>
         <int16_t name='bookkeeper_settings'/> noble bookkeeper precision: 10/100/1000/10000/all_accurate
 
-        <stl-vector name='caravans'>
-            <pointer type-name='caravan_state'/>
-        </stl-vector>
+        <stl-vector name='caravans' pointer-type='caravan_state'/>
         <int8_t/>
         <int16_t name='fortress_rank'/> outpost/hamlet/village/town/city/metropolis
         <int16_t name='progress_population' comment='?'/> (unles that's what the above is)
@@ -202,14 +164,14 @@
         <bool name='economy_enabled'/>
         <int8_t/>
         <bool name='justice_active'/>
-        <int16_t/>
-        <int16_t/>
-        <int16_t/>
+        <uint16_t init-value='60001'/>
+        <uint16_t init-value='60001'/>
+        <int16_t name='manager_timer'/>
         <compound name='becoming_capital'>
             <int32_t name='desired_architecture'/>
             <int32_t name='desired_offerings'/>
         </compound>
-        <static-array type-name='int16_t' count='152' index-enum='profession' comment='based on 23a, probably units killed (by profession), but with some extra room'/>
+        <static-array name='units_killed' type-name='int16_t' count='152' index-enum='profession'/>
         <static-array name='guild_wages' type-name='int32_t' count='6' index-enum='guild_id'/>
         <static-array name='guild_happiness' type-name='int16_t' count='6' index-enum='guild_id'/>
         <static-array name='labor_slowdown_timer' type-name='int16_t' count='6' index-enum='guild_id'/>
@@ -219,25 +181,19 @@
         <int32_t/>
         <int32_t name='fortress_age' comment='?; +1 per 10; used in first 2 migrant waves etc'/>
         <compound name='tasks' type-name='entity_activity_statistics'/>
-        <stl-vector name='unk22e8'/>
 
-        <stl-vector name='activities'>
-            <pointer type-name='activity_info'/>
-        </stl-vector>
-        <stl-vector name='dip_meeting_info'>
-            <pointer type-name='meeting_diplomat_info'/>
-        </stl-vector>
+        <stl-vector name='meeting_requests' type-name='int32_t' ref-target='unit'
+                    comment='guild complaints and diplomats'/>
 
-        <stl-vector name='unk230c' comment='based on 23a, most likely wounded dwarves waiting for rescue'>
-            <int32_t ref-target='unit'/>
-        </stl-vector>
+        <stl-vector name='activities' pointer-type='activity_info'/>
+        <stl-vector name='dip_meeting_info' pointer-type='meeting_diplomat_info'/>
+
+        <stl-vector name='aid_requesters' type-name='int32_t' ref-target='unit'/>
 
         <bool name='game_over'/>
 
         <compound name='invasions'>
-            <stl-vector name='list' comment='goblins...'>
-                <pointer type-name='invasion_info'/>
-            </stl-vector>
+            <stl-vector name='list' pointer-type='invasion_info'/>
             <int32_t name='next_id'/>
         </compound>
 
@@ -280,19 +236,11 @@
             </pointer>
         </stl-vector>
 
-        <stl-vector name='pets'>
-            <pointer type-name='pet_info'/>
-        </stl-vector>
-        <stl-vector name='parties'>
-            <pointer type-name='party_info'/>
-        </stl-vector>
-        <stl-vector name='room_rent'>
-            <pointer type-name='room_rent_info'/>
-        </stl-vector>
+        <stl-vector name='pets' pointer-type='pet_info'/>
+        <stl-vector name='parties' pointer-type='party_info'/>
+        <stl-vector name='room_rent' pointer-type='room_rent_info'/>
 
-        <stl-vector name='dipscripts'>
-            <pointer type-name='dipscript_info'/>
-        </stl-vector>
+        <stl-vector name='dipscripts' pointer-type='dipscript_info'/>
 
         <stl-vector name='dipscript_popups' pointer-type='dipscript_popup'
                     comment='cause viewscreen_meetingst to pop up'/>
@@ -314,7 +262,10 @@
         <stl-vector name='economic_stone' type-name='bool'
                     index-refers-to='(material-by-id 0 $)'/>
 
-        <uint32_t name='unk23c8_flags'/>
+        <bitfield name='unk23c8_flags'>
+            <flag-bit/>
+            <flag-bit name='recheck_aid_requests'/>
+        </bitfield>
         <int16_t name='unit_action_divisor'
                  comment='10-100; number of ticks it takes between a unit is visited for actions (?)'/>
         <int16_t name='mood_cooldown'/>
@@ -362,36 +313,36 @@
                 <stl-vector type-name='int32_t' name='pets'/>
             </compound>
             <compound name='price_setter'>
-                <stl-vector name='general_items' index-enum='item_type'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='weapons' index-refers-to='$global.world.raws.itemdefs.weapons[$]'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='armor' index-refers-to='$global.world.raws.itemdefs.armor[$]'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='handwear' index-refers-to='$global.world.raws.itemdefs.helms[$]'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='footwear' index-refers-to='$global.world.raws.itemdefs.shoes[$]'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='headwear' index-refers-to='$global.world.raws.itemdefs.gloves[$]'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='legwear' index-refers-to='$global.world.raws.itemdefs.pants[$]'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='prepared_food' index-refers-to='$global.world.raws.itemdefs.food[$]'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='wood'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='thread_cloth'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='bone'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='tooth'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='horn'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='pearl'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='shell'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='leather'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='silk'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='yarn'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='inorganic'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='meat'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='fish'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='plants'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='drinks'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='extract_animal'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='extract_plant'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='mill_animal'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='mill_plant'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='cheese_animal'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='cheese_plant'><pointer type-name='unit'/></stl-vector>
-                <stl-vector name='pets'><pointer type-name='unit'/></stl-vector>
+                <stl-vector name='general_items' index-enum='item_type' pointer-type='unit'/>
+                <stl-vector name='weapons' index-refers-to='$global.world.raws.itemdefs.weapons[$]' pointer-type='unit'/>
+                <stl-vector name='armor' index-refers-to='$global.world.raws.itemdefs.armor[$]' pointer-type='unit'/>
+                <stl-vector name='handwear' index-refers-to='$global.world.raws.itemdefs.helms[$]' pointer-type='unit'/>
+                <stl-vector name='footwear' index-refers-to='$global.world.raws.itemdefs.shoes[$]' pointer-type='unit'/>
+                <stl-vector name='headwear' index-refers-to='$global.world.raws.itemdefs.gloves[$]' pointer-type='unit'/>
+                <stl-vector name='legwear' index-refers-to='$global.world.raws.itemdefs.pants[$]' pointer-type='unit'/>
+                <stl-vector name='prepared_food' index-refers-to='$global.world.raws.itemdefs.food[$]' pointer-type='unit'/>
+                <stl-vector name='wood' pointer-type='unit'/>
+                <stl-vector name='thread_cloth' pointer-type='unit'/>
+                <stl-vector name='bone' pointer-type='unit'/>
+                <stl-vector name='tooth' pointer-type='unit'/>
+                <stl-vector name='horn' pointer-type='unit'/>
+                <stl-vector name='pearl' pointer-type='unit'/>
+                <stl-vector name='shell' pointer-type='unit'/>
+                <stl-vector name='leather' pointer-type='unit'/>
+                <stl-vector name='silk' pointer-type='unit'/>
+                <stl-vector name='yarn' pointer-type='unit'/>
+                <stl-vector name='inorganic' pointer-type='unit'/>
+                <stl-vector name='meat' pointer-type='unit'/>
+                <stl-vector name='fish' pointer-type='unit'/>
+                <stl-vector name='plants' pointer-type='unit'/>
+                <stl-vector name='drinks' pointer-type='unit'/>
+                <stl-vector name='extract_animal' pointer-type='unit'/>
+                <stl-vector name='extract_plant' pointer-type='unit'/>
+                <stl-vector name='mill_animal' pointer-type='unit'/>
+                <stl-vector name='mill_plant' pointer-type='unit'/>
+                <stl-vector name='cheese_animal' pointer-type='unit'/>
+                <stl-vector name='cheese_plant' pointer-type='unit'/>
+                <stl-vector name='pets' pointer-type='unit'/>
             </compound>
         </compound>
 
@@ -466,9 +417,7 @@
             <uint8_t name='sym_tile'/>
             <int16_t name='sym_fg_color'/>
             <int16_t name='sym_bg_color'/>
-            <stl-vector name='unk5c04'>
-                <pointer type-name='stl-string'/>
-            </stl-vector>
+            <stl-vector name='unk5c04' pointer-type='stl-string'/>
             <int32_t name='next_point_id'/>
             <int32_t name='next_route_id'/>
             <int32_t name='sel_route_idx'/>
@@ -477,17 +426,13 @@
         </compound>
 
         <compound name='burrows'>
-            <stl-vector name='list'>
-                <pointer type-name='burrow'/>
-            </stl-vector>
+            <stl-vector name='list' pointer-type='burrow'/>
             <int32_t name='next_id'/>
             <int32_t name='sel_index' refers-to='$$._parent.list[$]'/>
             <int32_t name='sel_id' ref-target='burrow'/>
             <bool name='in_confirm_delete'/>
             <bool name='in_add_units_mode'/>
-            <stl-vector name='list_units'>
-                <pointer type-name='unit'/>
-            </stl-vector>
+            <stl-vector name='list_units' pointer-type='unit'/>
             <stl-bit-vector name='sel_units' index-refers-to='$$._parent.list_units[$]'/>
             <int32_t name='unit_cursor_pos'/>
             <bool name='in_define_mode'/>
@@ -505,7 +450,7 @@
                 <pointer>
                     <int32_t name='id'/>
                     <stl-string name='name'/>
-                    <stl-vector/>
+                    <stl-vector name='burrows' type-name='int32_t' ref-target='burrow'/>
                 </pointer>
             </stl-vector>
             <int32_t name='next_id'/>
@@ -514,20 +459,15 @@
 
         <compound name='equipment'>
             <static-array name='items_by_type1' count='112' index-enum='item_type'>
-                <stl-vector>
-                    <pointer type-name='item'/>
-                </stl-vector>
+                <stl-vector pointer-type='item'/>
             </static-array>
 
             <static-array name='items_unassigned' count='112' index-enum='item_type'>
-                <stl-vector>
-                    <pointer type-name='item'/>
-                </stl-vector>
+                <stl-vector pointer-type='item'/>
             </static-array>
+
             <static-array name='items_assigned' count='112' index-enum='item_type'>
-                <stl-vector>
-                    <pointer type-name='item'/>
-                </stl-vector>
+                <stl-vector pointer-type='item'/>
             </static-array>
 
             <bitfield name='update'>
@@ -554,9 +494,7 @@
                 <int32_t ref-target='unit'/>
             </stl-vector>
 
-            <stl-vector name='hunter_ammunition'>
-                <pointer type-name='squad_ammo_spec'/>
-            </stl-vector>
+            <stl-vector name='hunter_ammunition' pointer-type='squad_ammo_spec'/>
             <stl-vector name='ammo_items'>
                 <int32_t ref-target='item'/>
             </stl-vector>
@@ -564,24 +502,15 @@
                 <int32_t ref-target='unit'/>
             </stl-vector>
 
-            <stl-vector name='training_assignments' comment='v0.34.06'>
-                <!-- sorted by animal_id -->
-                <pointer type-name='training_assignment'/>
-            </stl-vector>
+            <stl-vector name='training_assignments' comment='v0.34.06, sorted by animal_id' pointer-type='training_assignment'/>
         </compound>
 
         <compound name='hauling' comment='v0.34.08'>
-            <stl-vector name='routes'>
-                <pointer type-name='hauling_route'/>
-            </stl-vector>
+            <stl-vector name='routes' pointer-type='hauling_route'/>
             <int32_t name='next_id'/>
 
-            <stl-vector name='view_routes'>
-                <pointer type-name='hauling_route'/>
-            </stl-vector>
-            <stl-vector name='view_stops'>
-                <pointer type-name='hauling_stop'/>
-            </stl-vector>
+            <stl-vector name='view_routes' pointer-type='hauling_route'/>
+            <stl-vector name='view_stops' pointer-type='hauling_stop'/>
             <stl-vector name='view_bad'>
                 <int32_t/>
             </stl-vector>
@@ -589,19 +518,13 @@
 
             <bool name='in_stop'/>
             <int32_t name='cursor_stop'/>
-            <stl-vector name='stop_conditions'>
-                <pointer type-name='stop_depart_condition'/>
-            </stl-vector>
-            <stl-vector name='stop_links'>
-                <pointer type-name='route_stockpile_link'/>
-            </stl-vector>
+            <stl-vector name='stop_conditions' pointer-type='stop_depart_condition'/>
+            <stl-vector name='stop_links' pointer-type='route_stockpile_link'/>
             <bool name='in_advanced_cond'/>
 
             <bool name='in_assign_vehicle'/>
             <int32_t name='cursor_vehicle'/>
-            <stl-vector name='vehicles'>
-                <pointer type-name='vehicle'/>
-            </stl-vector>
+            <stl-vector name='vehicles' pointer-type='vehicle'/>
 
             <bool name='in_name'/>
             <stl-string name='old_name'/>
@@ -622,7 +545,7 @@
                     <int32_t name='death_year'/>
                     <int32_t name='death_time'/>
                     <int32_t name='timer' comment='+1 per 10'/>
-                    <int16_t name='unk6'/>
+                    <enum base-type='int16_t' name='ghost_type' type-name='ghost_type'/>
                 </pointer>
             </stl-vector>
 
@@ -647,9 +570,7 @@
 
         <compound name='squads'>
             <stl-vector name='list' has-bad-pointers='true'
-                        comment='valid only when ui is displayed'>
-                <pointer type-name='squad'/>
-            </stl-vector>
+                        comment='valid only when ui is displayed' pointer-type='squad'/>
 
             <stl-vector name='unk6e08'/>
 
@@ -671,16 +592,12 @@
 
             <bool name='in_kill_order'/>
 
-            <stl-vector name='kill_rect_targets'>
-                <pointer type-name='unit'/>
-            </stl-vector>
+            <stl-vector name='kill_rect_targets' pointer-type='unit'/>
 
             <padding size='4'/>
 
             <bool name='in_kill_list'/>
-            <stl-vector name='kill_targets'>
-                <pointer type-name='unit'/>
-            </stl-vector>
+            <stl-vector name='kill_targets' pointer-type='unit'/>
             <stl-bit-vector name='sel_kill_targets' index-refers-to='$$._parent.kill_target[$]'/>
             <padding size='4'/>
 
@@ -714,6 +631,41 @@
         <int32_t/>
         <int16_t/>
         <int16_t/>
+    </struct-type>
+
+    <struct-type type-name='map_viewport'>
+        <bool name='adv_mode'/>
+        <bool name='unk1'/>
+        <uint8_t name='map_rotation'/>
+        <int16_t name='min_x'/>
+        <int16_t name='min_y'/>
+        <int16_t name='max_x'/>
+        <int16_t name='max_y'/>
+        <int16_t name='window_x'/>
+        <int16_t name='window_y'/>
+        <int16_t name='window_z'/>
+    </struct-type>
+
+    <struct-type type-name='map_renderer'>
+        <static-array name='entity' count='256'>
+            <static-array count='256' type-name='uint8_t' comment='|=1 building, |=2 ramp/stair'/>
+        </static-array>
+        <stl-vector name='cursor_units' pointer-type='unit'/>
+        <pointer name='cursor_guts' type-name='unit'/>
+        <bool name='multiple_guts'/>
+        <pointer name='cursor_corpse' type-name='item'/>
+        <int32_t name='cursor_corpse_cnt'/>
+        <pointer name='cursor_corpsepiece' type-name='item'/>
+        <int32_t name='cursor_corpsepiece_cnt'/>
+        <pointer name='cursor_bones' type-name='item'/>
+        <int32_t name='cursor_bones_cnt'/>
+        <pointer name='cursor_other' type-name='item'/>
+        <int32_t name='cursor_other_cnt'/>
+        <int8_t name='unk_10034'/>
+        <int8_t name='unk_10035'/>
+        <int32_t name='cur_tick_count' comment='GetTickCount'/>
+        <int16_t name='tick_phase' comment='cur_year_tick%10080'/>
+        <int8_t name='dim_colors'/>
     </struct-type>
 </data-definition>
 

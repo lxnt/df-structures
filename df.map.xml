@@ -130,6 +130,14 @@
         <flag-bit name='update_liquid'/>
         <flag-bit name='update_liquid_twice'
                   comment='Protects UpdateLiquid from being cleared the first time.'/>
+        <flag-bit name='repath_on_freeze'
+                  comment='reindex_pathfinding set and flag cleared if temperature below 10000'/>
+        <flag-bit name='repath_on_melt'
+                  comment='reindex_pathfinding set and flag cleared if temperature above 10000'/>
+        <flag-bit name='has_aquifer'
+                  comment='has actual aquifer tiles (?)'/>
+        <flag-bit name='check_aquifer'
+                  comment='has tiles that may get flooded by an adjacent aquifer'/>
     </bitfield-type>
 
     <bitfield-type type-name='z_level_flags'>
@@ -187,31 +195,29 @@
     <struct-type type-name='map_block'>
         <compound name='flags' type-name='block_flags'/>
 
-        <stl-vector name='block_events'>
-            <pointer type-name='block_square_event'/>
-        </stl-vector>
+        <stl-vector name='block_events' pointer-type='block_square_event'/>
 
         <df-linked-list name='block_burrows' type-name='block_burrow_link'/>
 
         <int32_t name='local_feature' init-value='-1' comment='index into world_data.region_map'/>
         <int32_t name='global_feature' init-value='-1' ref-target='world_underground_region'/>
         <int32_t name='unk2' init-value='-1'/>
-        <int32_t name='unk3' comment='undef'/>
+
+        This is compared to unit.animal.population.depth when a revealed
+        necromancer searches for a map edge tile to run away to:
+        <int32_t name='layer_depth' comment='uninitialized'/>
+
         <int32_t name='dsgn_check_cooldown'/>
         <compound type-name='tile_designation' name='default_liquid'/>
 
         <stl-vector name='items'>
             <int32_t ref-target='item'/>
         </stl-vector>
-        <stl-vector name='flows'>
-            <pointer type-name='flow_info'/>
-        </stl-vector>
+        <stl-vector name='flows' pointer-type='flow_info'/>
 
         <compound name='flow_pool' type-name='flow_reuse_pool'/>
 
-        <stl-vector name='plants'>
-            <pointer type-name='plant'/>
-        </stl-vector>
+        <stl-vector name='plants' pointer-type='plant'/>
 
         <compound name='map_pos' type-name='coord'/>
         <compound name='region_pos' type-name='coord2d'/>
@@ -232,10 +238,8 @@
             </static-array>
         </static-array>
 
-        <static-array name='unk9' count='16'>
-            <static-array count='16'>
-                <int8_t/>
-            </static-array>
+        <static-array name='fog_of_war' count='16' comment='for adventure mode'>
+            <static-array count='16' type-name='uint8_t'/>
         </static-array>
 
         <static-array name='path_cost' count='16'>
@@ -333,9 +337,10 @@
     </class-type>
 
     <struct-type type-name='map_block_column'>
-        <int16_t name="unk_0"/>
-        <int16_t name="unk_2"/>
-        <int16_t name='ground_level' comment='for sidebar'/>
+        <int16_t name="sink_level" comment='water at or above this level sinks into aquifer tiles'/>
+        <int16_t name="beach_level" comment='water at this level disappears if above more water'/>
+
+        <int16_t name='ground_level' comment='for coloring unallocated blocks'/>
 
         <stl-vector name='unmined_glyphs'>
             <pointer>
@@ -353,18 +358,16 @@
             </static-array>
         </static-array>
 
-        <stl-vector name='column_rectangles'>
-            <pointer type-name='cave_column_rectangle'/>
-        </stl-vector>
+        <stl-vector name='column_rectangles' pointer-type='cave_column_rectangle'/>
 
-        <int16_t name='unk_c2c'/>
-        <df-flagarray name='flags'/>
+        <int16_t name='z_shift' comment='seems to be 0 originally, but updated when map is shifted'/>
 
-        <int16_t name='tile_min_x'/>
-        <int16_t name='tile_min_y'/>
+        <df-flagarray name='flags' comment='0 process cave columns for caveins'/>
+
+        <compound name='map_pos' type-name='coord2d' comment='top left in tiles'/>
         <int16_t name='unk_c3c' comment='uninitialized'/>
-        <int16_t name='unk_c3e'/>
-        <int16_t name='unk_c40'/>
+
+        <compound name='region_pos' type-name='coord2d'/>
     </struct-type>
 
     <enum-type type-name='block_square_event_type'>
@@ -399,8 +402,10 @@
         <compound name='tile_bitmask' type-name='tile_bitmask'/>
         <bitfield name='flags'>
             <flag-bit name='discovered'/>
-            <flag-bit name='cluster' comment='??'/>
-            <flag-bit name='vein' comment='??'/>
+            <flag-bit name='cluster'/>
+            <flag-bit name='vein'/>
+            <flag-bit name='cluster_small'/>
+            <flag-bit name='cluster_one'/>
         </bitfield>
     </class-type>
 
@@ -454,9 +459,7 @@
     </enum-type>
 
     <class-type type-name='feature' original-name='featurest'>
-        <stl-vector name='population'>
-            <pointer type-name='world_population'/>
-        </stl-vector>
+        <stl-vector name='population' pointer-type='world_population'/>
 
         <int32_t/>
         <int16_t/>
@@ -548,11 +551,11 @@
                 <pointer name='name' type-name='stl-string'/>
             </vmethod>
 
-            <vmethod ret-type='bool'/>
-            <vmethod ret-type='bool'/>
-            <vmethod ret-type='bool'/>
-            <vmethod ret-type='bool'/>
-            <vmethod ret-type='bool'/>
+            <vmethod name='isWater' ret-type='bool'/>
+            <vmethod name='isSubterranean' ret-type='bool'/>
+            <vmethod name='isMagma' ret-type='bool'/>
+            <vmethod name='isChasm' ret-type='bool'/>
+            <vmethod name='isLayer' ret-type='bool'/>
 
             <vmethod ret-type='bool'/>
             <vmethod ret-type='int32_t' name='getLayer'/>
@@ -828,7 +831,7 @@
     </struct-type>
 
     <struct-type type-name='effect_info'>
-        <int32_t comment='uninit'/>
+        <int32_t name='id' comment='assigned during Save'/>
         <pointer type-name='job'/>
         <int16_t name='type' comment='2 = falling into chasm'/>
         <int16_t name='foreground'/>

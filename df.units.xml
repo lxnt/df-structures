@@ -93,7 +93,7 @@
     <bitfield-type type-name='unit_flags3' base-type='uint32_t'>
         <flag-bit name='body_part_relsize_computed'/>
         <flag-bit name='size_modifier_computed'/>
-        <flag-bit name='unk2' comment='Is set to 1 every tick for non-dead creatures; cleared if removing StuckIn item.'/>
+        <flag-bit name='stuck_weapon_computed' comment='cleared if removing StuckIn item to recompute wound flags.'/>
         <flag-bit name='compute_health' comment='causes the health structure to be created or updated'/>
 
         <flag-bit name='announce_titan' comment='Announces creature like an FB or titan.'/>
@@ -117,12 +117,12 @@
         <flag-bit name='unk15' comment='dropped when znew >= zold'/>
 
         <flag-bit name='unk16' comment='something to do with werewolves?'/>
-        <flag-bit name='unk17'/>
-        <flag-bit name='unk18'/>
+        <flag-bit name='no_meandering' comment='for active_invaders'/>
+        <flag-bit name='floundering'/>
         <flag-bit name='exit_vehicle1' comment='trapavoid'/>
 
         <flag-bit name='exit_vehicle2' comment='trapavoid'/>
-        <flag-bit name='unk21'/>
+        <flag-bit name='dangerous_terrain'/>
         <flag-bit name='unk22'/>
         <flag-bit name='unk23'/>
     </bitfield-type>
@@ -322,6 +322,28 @@
         </enum-item>
     </enum-type>
 
+    <enum-type type-name='unit_relationship_type' base-type='int16_t' comment='Used in unit.relations'>
+        <enum-item name='Pet'/>
+        <enum-item name='Spouse'/>
+        <enum-item name='Mother'/>
+        <enum-item name='Father'/>
+        <enum-item name='LastAttacker'/>
+        <enum-item name='GroupLeader'/>
+        <enum-item name='Dragee'/>
+        <enum-item name='Dragger'/>
+        <enum-item name='RiderMount'/>
+        <enum-item name='Lover'/>
+        <enum-item name='unk10'/>
+        <enum-item name='unk11'/>
+        <enum-item name='Child'/>
+        <enum-item name='Friend'/>
+        <enum-item name='Grudge'/>
+        <enum-item name='Worship'/>
+        <enum-item name='AcquaintanceLong'/>
+        <enum-item name='AcquaintancePassing'/>
+        <enum-item name='Bonded'/>
+    </enum-type>
+
     <struct-type type-name='unit' key-field='id' instance-vector='$global.world.units.all'>
         <compound type-name='language_name' name='name'/>
 
@@ -348,18 +370,14 @@
             </comment>
         </compound>
         <int32_t name='idle_area_threshold' init-value='3'/>
-        <int16_t name='idle_area_unk_a0'/>
+        <enum base-type='int16_t' name='idle_area_type' type-name='unit_station_type'/>
 
-        <compound name='unknown1'>
-            <padding size='2'/>
-            <int16_t name='unk_a4a'/>
-            <int16_t name='unk_a4b'/>
-        </compound>
+        <int32_t name='follow_distance'/>
 
         <compound name='path'>
             <compound name='dest' type-name='coord'/>
 
-            <int16_t name='unk_ae' comment='-1 unless dest valid'/>
+            <enum base-type='int16_t' name='goal' type-name='unit_path_goal'/>
 
             <compound name='path' type-name='coord_path'/>
         </compound>
@@ -369,9 +387,11 @@
         <compound name='flags3' type-name='unit_flags3'/>
 
         <compound name='meeting'>
-            <enum name='role' base-type='int8_t'>
-                <enum-item name="AttendMeeting" value="1"/>
-                <enum-item name="ConductMeeting"/>
+            <enum name='state' base-type='int8_t'>
+                <enum-item name="SelectNoble" value="0"/>
+                <enum-item name="FollowNoble" value="1"/>
+                <enum-item name="DoMeeting" value="2"/>
+                <enum-item name="LeaveMap" value="3"/>
             </enum>
             <int32_t name='target_entity' ref-target='historical_entity'/>
             <enum name='target_role' type-name='entity_position_responsibility' base-type='int16_t'/>
@@ -387,25 +407,19 @@
 
         <enum name='training_level' base-type='int32_t'
               type-name='animal_training_level' init-value='WildUntamed'/>
-        <int32_t name='unk_104' init-value='-1'/>
+        <int32_t name='schedule_id' ref-target='schedule_info'/>
 
         <int32_t name='civ_id' ref-target='historical_entity'/>
         <int32_t name='population_id' ref-target='entity_population'/>
-        <int32_t comment='v0.34.01' init-value='-1'/>
+        <int32_t name='unk_c0' comment='v0.34.01' init-value='-1'/>
         <int32_t name='invasion_id' ref-target='invasion_info'/>
 
-        <compound name='unknown3'>
-            <compound name='unk_path' type-name='coord_path'/>
+        <compound name='patrol_route' type-name='coord_path'
+                  comment='used by necromancers for corpse locations, siegers etc'/>
+        <int32_t name='patrol_index' comment='from 23a'/>
 
-            <uint32_t name='unk_144'/>
-        </compound>
-
-        <stl-vector name='specific_refs'>
-            <pointer type-name='specific_ref'/>
-        </stl-vector>
-        <stl-vector name='general_refs'>
-            <pointer type-name='general_ref'/>
-        </stl-vector>
+        <stl-vector name='specific_refs' pointer-type='specific_ref'/>
+        <stl-vector name='general_refs' pointer-type='general_ref'/>
 
         <compound name='military'>
             <int32_t name='squad_id' ref-target='squad'/>
@@ -419,25 +433,17 @@
                         ref-target='item' comment='v0.34.06'/>
 
             <static-array name='uniforms' count='4'>
-                <stl-vector>
-                    <int32_t ref-target='item'/>
-                </stl-vector>
+                <stl-vector type-name='int32_t' ref-target='item'/>
             </static-array>
 
             <bitfield name='pickup_flags'>
                 <flag-bit name='update'/>
             </bitfield>
 
-            <stl-vector name='uniform_pickup'>
-                <int32_t ref-target='item'/>
-            </stl-vector>
-            <stl-vector name='uniform_drop'>
-                <int32_t ref-target='item'/>
-            </stl-vector>
+            <stl-vector name='uniform_pickup' type-name='int32_t' ref-target='item'/>
+            <stl-vector name='uniform_drop' type-name='int32_t' ref-target='item'/>
 
-            <stl-vector name='individual_drills'>
-                <int32_t ref-target='activity_entry'/>
-            </stl-vector>
+            <stl-vector name='individual_drills' type-name='int32_t' ref-target='activity_entry'/>
         </compound>
 
         <compound name='animal'>
@@ -453,8 +459,9 @@
 
         <compound name='relations'>
             <uint32_t name='pregnancy_timer'/>
-            <pointer name='pregnancy_ptr' type-name='unit_genes'/>
-            <int16_t name='pregnancy_mystery' init-value='-1' comment='-1 = crash, 1 = many cats'/>
+            <pointer name='pregnancy_genes' type-name='unit_genes' comment='genes from mate'/>
+            <int16_t name='pregnancy_caste' init-value='-1' comment='caste of mate'
+                     ref-target='caste_raw' aux-value='$$._global.race'/>
             <enum base-type='int16_t' name='mood_copy' type-name='mood_type' init-value='None'
                   comment='copied from mood type upon entering strange mood'/>
             <pointer name='ghost_info' type-name='unit_ghost_info'/>
@@ -475,6 +482,8 @@
             <pointer type-name='unit' name='following'/>
             <uint16_t name='unk_238' comment='invalid unless following'/>
 
+
+            This should be a static-array, size 10, with index-enum unit_relationship_type; will likely need to fix plugins and scripts
             <int32_t name='pet_owner_id' ref-target='unit'/>
             <int32_t name='spouse_id' ref-target='unit'
                      comment='not used in relationship screen..'/>
@@ -489,39 +498,29 @@
                      comment='unit that drags this one'/>
             <int32_t name='rider_mount_id' ref-target='unit'/>
             <int32_t name='lover_id' ref-target='unit'/>
-            <int16_t name='unk_264'/>
+            <int16_t name='mount_type' comment='0 = riding, 1 = being carried, 2/3 = wagon horses, 4 = wagon merchant'/>
         </compound>
 
         <compound name='last_hit' type-name='history_hit_item'/>
 
         <int32_t name='riding_item_id' ref-target='item' comment='v0.34.08'/>
 
-        <stl-vector name='inventory'>
-            <pointer type-name='unit_inventory_item'/>
-        </stl-vector>
+        <stl-vector name='inventory' pointer-type='unit_inventory_item'/>
 
-        <stl-vector name='owned_items'>
-            <int32_t ref-target='item'/>
-        </stl-vector>
-        <stl-vector name='traded_items' comment='items brought to trade depot'>
-            <int32_t ref-target='item'/>
-        </stl-vector>
-        <stl-vector name='owned_buildings'>
-            <pointer type-name='building'/>
-        </stl-vector>
-        <stl-vector name='corpse_parts' comment='entries remain even when items are destroyed'>
-            <int32_t ref-target='item'/>
-        </stl-vector>
+        <stl-vector name='owned_items' type-name='int32_t' ref-target='item'/>
+        <stl-vector name='traded_items' comment='items brought to trade depot' type-name='int32_t' ref-target='item'/>
+        <stl-vector name='owned_buildings' pointer-type='building'/>
+        <stl-vector name='corpse_parts' comment='entries remain even when items are destroyed' type-name='int32_t' ref-target='item'/>
 
         <compound name='job'>
             <int32_t name='account'/>
-            <int32_t name='satisfaction' comment='guess'/>
+            <int32_t name='satisfaction' comment='amount earned recently for jobs'/>
             <pointer type-name='unit' name='hunt_target'/>
             <pointer type-name='building' name='destroy_target'/>
             <compound name='last_attack_dir' type-name='coord2d'/>
             <uint16_t name='unk_2ec'/> reset to 0 together with x,y on job_counter reroll, so maybe z
             <uint16_t name='siege_morale' init-value='100' comment='guess'/>
-            <uint16_t name='unk_2f0_cntr'/> // increments every tick
+            <uint16_t name='morale_recovery_timer' comment='0-1000'/>
             <pointer comment='df_job' name='current_job' type-name='job'/>
             <enum base-type='int16_t' type-name='job_skill' name='mood_skill'/>
             <uint32_t name='unk_2fc'/> in advmode, lets non-player unit have job_counter update if nonzero
@@ -532,9 +531,7 @@
         <compound name='body'>
             <compound name='components' type-name='body_component_info'/>
 
-            <stl-vector name='wounds'>
-                <pointer type-name='unit_wound'/>
-            </stl-vector>
+            <stl-vector name='wounds' pointer-type='unit_wound'/>
             <int32_t name='wound_next_id' init-value='1'/>
 
             <static-array name='unk_39c' count='10'>
@@ -556,9 +553,7 @@
             <int32_t name='infection_level'
                       comment='GETS_INFECTIONS_FROM_ROT sets; DISEASE_RESISTANCE reduces; >=300 causes bleeding'/>
 
-            <stl-vector name='spatters'>
-                <pointer type-name='unit_spatter'/>
-            </stl-vector>
+            <stl-vector name='spatters' pointer-type='unit_spatter'/>
         </compound>
 
         <compound name='appearance'>
@@ -602,7 +597,7 @@
             <int16_t name='winded'/>
             <int16_t name='stunned'/> // 54c decrements every tick, unstun at 0
             <int16_t name='unconscious'/>
-            <int16_t name='unk_550'/>
+            <int16_t name='suffocation' comment='counts up while winded, results in death'/>
             <int16_t name='webbed'/>
 
             -- When gutted:
@@ -646,24 +641,19 @@
             <uint32_t name='speed_add' comment='v0.34.01'/>
             <uint32_t name='speed_mul_percent' comment='v0.34.01' init-value='100'/>
 
-            <pointer name='attr_change' comment='v0.34.01'>
-                <static-array name='phys_att_perc' type-name='int32_t'
-                              count='6' index-enum='physical_attribute_type'/>
-                <static-array name='phys_att_add' type-name='int32_t'
-                              count='6' index-enum='physical_attribute_type'/>
-                <static-array name='ment_att_perc' type-name='int32_t'
-                              count='13' index-enum='mental_attribute_type'/>
-                <static-array name='ment_att_add' type-name='int32_t'
-                              count='13' index-enum='mental_attribute_type'/>
-            </pointer>
-            <uint32_t comment='v0.34.01' init-value='100'/>
+            <pointer name='attr_change' type-name='curse_attr_change' comment='v0.34.01'/>
+            <uint32_t name='luck_mul_percent' comment='v0.34.01' init-value='100'/>
 
-            <stl-vector comment='v0.34.01'/>
-            <stl-vector comment='v0.34.01'/>
-            <stl-vector comment='v0.34.01'/>
+            <stl-vector name='interaction_id' type-name='int32_t' comment='v0.34.01'
+                        ref-target='creature_interaction_effect'/>
+            <stl-vector name='interaction_time' type-name='int32_t' comment='v0.34.01'/>
+            <stl-vector name='interaction_delay' type-name='int32_t' comment='v0.34.01'/>
+
             <int32_t name='time_on_site' comment='v0.34.01'/>
-            <stl-vector type-name='int32_t' comment='v0.34.01'/>
-            <stl-vector type-name='int32_t' comment='v0.34.01'/>
+
+            <stl-vector name='own_interaction' type-name='int32_t' comment='v0.34.01'
+                        refers-to='$$._global.body.body_plan.interactions[$]'/>
+            <stl-vector name='own_interaction_delay' type-name='int32_t' comment='v0.34.01'/>
         </compound>
 
         <compound name='counters2'>
@@ -681,13 +671,11 @@
             <uint32_t name='vomit_timeout' comment='blocks nausea causing vomit'/>
 
             <uint32_t name='stored_fat' comment='hunger leads to death only when 0'/>
-            <uint32_t name='unk_59c'/>
+            <uint32_t name='undead_hitpoints' comment='collapses once >= area_cur'/>
         </compound>
 
         <compound name='status'>
-            <stl-vector name='misc_traits'>
-                <pointer type-name='unit_misc_trait'/>
-            </stl-vector>
+            <stl-vector name='misc_traits' pointer-type='unit_misc_trait'/>
 
             <pointer name='eat_history'>
                 <compound name='food'>
@@ -713,51 +701,41 @@
             <int32_t name='demand_timeout' init-value='1000'/>
             <int32_t name='mandate_timeout' init-value='1000'/>
 
-            <stl-vector name='attacker_ids'>
-                <int32_t ref-target='unit'/>
-            </stl-vector>
-            <stl-vector name='attacker_unk' type-name='int16_t'/>
+            <stl-vector name='attacker_ids' type-name='int32_t' ref-target='unit'/>
+            <stl-vector name='attacker_cntdn' type-name='int16_t'/>
 
-            <uint8_t name='unk_5dc'/>
+            <uint8_t name='face_direction' comment='for wagons'/>
 
             <compound type-name='language_name' name='artifact_name'/>
-            <stl-vector name='souls'>
-                <pointer type-name='unit_soul'/>
-            </stl-vector>
+            <stl-vector name='souls' pointer-type='unit_soul'/>
             <pointer name='current_soul' type-name='unit_soul'/>
 
-            <stl-vector name='demands'>
-                <pointer type-name='unit_demand'/>
-            </stl-vector>
+            <stl-vector name='demands' pointer-type='unit_demand'/>
 
             <static-array type-name='bool' name='labors' index-enum='unit_labor' count='94'/>
 
-            <stl-vector name='wrestle_items'>
-                <pointer type-name='unit_item_wrestle'/>
-            </stl-vector>
+            <stl-vector name='wrestle_items' pointer-type='unit_item_wrestle'/>
             <stl-vector name='observed_traps' type-name='int32_t' ref-target='building'/>
 
-            <stl-vector name='recent_events'>
-                <pointer type-name='unit_thought'/>
-            </stl-vector>
-
-            <stl-vector name='unk_700'/>
+            <stl-vector name='recent_events' pointer-type='unit_thought'/>
+            <stl-vector name='dreams'  pointer-type='unit_thought' comment='moved into recent_events upon waking up'/>
 
             <int32_t name='happiness' init-value='100'/>
             <int16_t name='insanity_chance' comment='increases gradually when miserable'/>
 
-            <stl-vector name='unk_718'/>
-            <stl-vector name='unk_728'/>
 
+            <stl-vector name='complaints' pointer-type='unit_complaint'/>
+            <stl-vector name='requests' pointer-type='unit_request'/>
             <stl-vector name='acquaintances' pointer-type='unit_acquaintance'/>
+            <stl-vector name='coin_debts' pointer-type='unit_coin_debt'/>
 
-            <stl-vector name='unk_748'/>
+            <int16_t name='adv_sleep_timer'/>
 
-            <uint16_t name='unk_758'/>
+            -- average of the following vector
+            <compound name='recent_job_area' type-name='coord'/>
 
-            -- coordinates, and a set of coordinate vectors
-            <compound name='unk_75a' type-name='coord'/>
-            <compound name='unk_760' type-name='coord_path'/>
+            -- up to 50 locations where jobs were performed recently by the unit
+            <compound name='recent_jobs' type-name='coord_path'/>
         </compound>
 
         <int32_t name='hist_figure_id' ref-target='historical_figure'/>
@@ -772,11 +750,9 @@
             <int16_t name='limbs_fly_max'/>
             <int16_t name='limbs_fly_count'/>
 
-            <stl-vector name='body_part_temperature'>
-                <pointer name='temperature' type-name='temperaturest'/>
-            </stl-vector>
+            <stl-vector name='body_part_temperature' pointer-type='temperaturest'/>
 
-            <uint32_t name='unk_7b4'/> set to 0 after move
+            <uint32_t name='add_path_flags' comment='pathing flags to OR, set to 0 after move'/>
 
             <compound type-name='tile_designation' name='liquid_type'/>
             <uint8_t name='liquid_depth'/>
@@ -790,13 +766,12 @@
         </compound>
 
         <compound name='syndromes'>
-            <stl-vector name='active'>
-                <pointer type-name='unit_syndrome'/>
-            </stl-vector>
-            <stl-vector name='unk_7d4'>
-                <int32_t ref-target='syndrome'/>
-            </stl-vector>
-            <stl-vector name='unk_7e4' type-name='int16_t'/>
+            -- Sorted by type:
+            <stl-vector name='active' pointer-type='unit_syndrome'/>
+
+            -- Seems to be incremented every new infection:
+            <stl-vector name='reinfection_type' type-name='int32_t' ref-target='syndrome'/>
+            <stl-vector name='reinfection_count' type-name='int16_t'/>
         </compound>
 
         <compound name='reports'>
@@ -811,17 +786,13 @@
 
         <pointer name='health' type-name='unit_health_info'/>
 
-        <stl-vector name='used_items'>
-            <comment>Contains worn clothes, armor, weapons, arrows fired by archers</comment>
-            <pointer type-name='unit_item_use'/>
-        </stl-vector>
+        <stl-vector name='used_items' pointer-type='unit_item_use' comment='Contains worn clothes, armor, weapons, arrows fired by archers'/>
 
-        <stl-vector name='adventurer_knows' comment='if not, no names'>
-            <int32_t ref-target='unit'/>
-        </stl-vector>
+        <stl-vector name='adventurer_knows' comment='if not, no names' type-name='int32_t' ref-target='unit'/>
 
         <compound name='enemy'>
-            <stl-vector name='unk1' comment='v0.34.01'/>
+            <stl-vector name='sound_cooldown' type-name='int32_t' comment='v0.34.01'
+                        index-refers-to='$$._global.caste.ref-target.sound[$]'/>
 
             <pointer name='undead' comment='v0.34.01'>
                 <compound>
@@ -838,16 +809,25 @@
             <int32_t name='were_caste' ref-target='caste_raw' aux-value='$$.were_race'/>
             <int32_t name='normal_race' ref-target='creature_raw'/>
             <int32_t name='normal_caste' ref-target='caste_raw' aux-value='$$.normal_race'/>
-            <int32_t name='unk3' init-value='-1' comment='v0.34.01'/>
+            <int32_t name='interaction' refers-to='$$._global.body.body_plan.interactions[$]' comment='v0.34.01'/>
 
             <stl-vector name='unk_850'/>
-            <stl-vector name='unk_860' type-name='int32_t'/>
+            <stl-vector name='witness_reports'>
+                <pointer>
+                    <int32_t name='death_id' ref-target='death_info'/>
+                    <int32_t name='crime_id' ref-target='criminal_case'/>
+                    <int32_t name='unk1' comment='0 accuses, 1 corpse'/>
+                    <int32_t name='year'/>
+                    <int32_t name='year_tick'/>
+                    <int32_t name='unk2' comment='bit 0 accuses'/>
+                </pointer>
+            </stl-vector>
 
             <int32_t name='enemy_status_slot' init-value='-1'/>
             <int32_t name='unk_874_cntr'/> // age ? incremented every tick
 
             <stl-vector name='body_part_878' type-name='uint8_t'/>
-            <stl-vector name='body_part_888' type-name='uint8_t'/>
+            <stl-vector name='body_part_888' type-name='uint8_t'/> 0 blocks pains, nausea
             <stl-vector name='body_part_relsize' type-name='int32_t' comment='with modifiers'/>
             <stl-vector name='body_part_8a8' type-name='uint8_t'/>
             <stl-vector name='body_part_base_ins' type-name='uint16_t'/>
@@ -870,9 +850,7 @@
         <int32_t name='weight'/>
         <int32_t name='weight_fraction' comment='1e-6'/>
 
-        <stl-vector name='burrows'>
-            <int32_t ref-target='burrow'/>
-        </stl-vector>
+        <stl-vector name='burrows' type-name='int32_t' ref-target='burrow'/>
 
         <int32_t name='combat_side_id'/>
     </struct-type>
@@ -933,19 +911,19 @@
             <enum-item name='Hauled'/>
             <enum-item name='Weapon' comment='also shield, crutch'/>
             <enum-item name='Worn' comment='quiver'/>
-            <enum-item name='InBody'/>
+            <enum-item name='Piercing'/>
             <enum-item name='Flask' comment='attached to clothing'/>
             <enum-item name='WrappedAround' comment='e.g. bandage'/>
             <enum-item name='StuckIn'/>
-            <enum-item name='Unk7' comment='string descr like Worn'/>
-            <enum-item name='Shouldered'/>
+            <enum-item name='InMouth' comment='string descr like Worn'/>
+            <enum-item name='Pet' comment='Left shoulder, right shoulder, or head, selected randomly using pet_seed'/>
             <enum-item name='SewnInto'/>
         </enum>
 
         <int16_t name='body_part_id'
                  refers-to='$$._global._parent._global.body.body_plan.body_parts[$]'/>
 
-        <int32_t comment='always 0'/>
+        <int32_t name='pet_seed' comment='RNG seed for Pet mode'/>
         <int32_t name='wound_id' init-value='-1' comment='-1 unless suture'/>
     </struct-type>
 
@@ -977,31 +955,35 @@
                  comment='counts to PHYS_ATT_RATES demotion; then value--; soft_demotion++'/>
     </struct-type>
 
-    <struct-type type-name='unit_syndrome'>
+    <struct-type type-name='unit_syndrome' key-field='type'>
         <int32_t name='type' ref-target='syndrome'/>
         <int32_t name='year'/>
         <int32_t name='year_time'/>
         <int32_t name='ticks'/>
-        <stl-vector type-name='int32_t'/>
-        <int32_t name='unk1'/>
-        <stl-vector name='symptoms'>
+        <stl-vector name='wounds' type-name='int32_t' comment='refers to unit_wound by id'/>
+        <int32_t name='wound_id' init-value='-1'/>
+        <stl-vector name='symptoms' index-refers-to='$$._global.type.ref-target.ce[$]'>
             <pointer>
-                <int32_t name='unk1'/>
-                <int32_t name='unk2'/>
+                <int32_t name='quantity' comment='from spatter size'/>
+                <int32_t name='delay' comment='for SIZE_DELAYS'/>
                 <int32_t name='ticks'/>
+                -- When not cie.isUntargeted():
                 <stl-vector name='target_bp' type-name='int16_t'/>
                 <stl-vector name='target_layer' type-name='int16_t'/>
-                <stl-vector name='target_unk1' type-name='int32_t'/>
-                <stl-vector name='target_unk2' type-name='int32_t'/>
+                <stl-vector name='target_quantity' type-name='int32_t'/>
+                <stl-vector name='target_delay' type-name='int32_t'/>
                 <stl-vector name='target_ticks' type-name='int32_t'/>
-                <uint32_t name='flags'/>
+                <bitfield name='flags'>
+                    <flag-bit name='disabled' comment='if PROB roll fails, or all symptoms expire'/>
+                    <flag-bit name='active'/>
+                </bitfield>
             </pointer>
         </stl-vector>
-        <int16_t name='unk2'/>
+        <int16_t name='reinfection_count' comment='set from unit.reinfection_count[i]++'/>
         <bitfield name='flags'>
             cause rq_diagnosis:
             <flag-bit name='is_sick' comment='causes health.flags.needs_healthcare'/>
-            <flag-bit/>
+            <flag-bit name='is_sick_low' comment='less sick? fever: 5-19 low, 20-* full'/>
             prevent rq_diagnosis or needs_healthcare:
             <flag-bit/>
             <flag-bit/>
@@ -1025,8 +1007,8 @@
     <bitfield-type type-name='wound_damage_flags1'>
         <flag-bit name='cut'/>
         <flag-bit name='smashed'/>
-        <flag-bit name='straight_scar'/>
-        <flag-bit name='huge_dent'/>
+        <flag-bit name='scar_cut' comment='straight scar'/>
+        <flag-bit name='scar_smashed' comment='huge dent'/>
 
         <flag-bit name='tendon_bruised'/>
         <flag-bit name='tendon_strained'/>
@@ -1043,20 +1025,20 @@
         <flag-bit name='major_artery'/>
         <flag-bit name='guts_spilled'/>
 
-        <flag-bit/>
-        <flag-bit name='jagged_scar'/>
-        <flag-bit/>
+        <flag-bit name='edged_shake1'/>
+        <flag-bit name='scar_edged_shake1' comment='jagged scar'/>
+        <flag-bit name='edged_shake2'/>
         <flag-bit name='broken'/>
 
-        <flag-bit name='huge_dent2'/>
-        <flag-bit/>
-        <flag-bit/>
-        <flag-bit name='jagged_scar2'/>
+        <flag-bit name='scar_broken' comment='huge dent'/>
+        <flag-bit name='gouged'/>
+        <flag-bit name='blunt_shake1'/>
+        <flag-bit name='scar_blunt_shake1' comment='jagged scar'/>
 
-        <flag-bit/>
-        <flag-bit/>
-        <flag-bit name='jagged_scar3'/>
-        <flag-bit/>
+        <flag-bit name='blunt_shake2'/>
+        <flag-bit name='joint_bend1'/>
+        <flag-bit name='scar_joint_bend1' comment='jagged scar'/>
+        <flag-bit name='joint_bend2'/>
 
         <flag-bit name='compound_fracture'/>
         <flag-bit name='diagnosed'/>
@@ -1066,7 +1048,7 @@
 
     <bitfield-type type-name='wound_damage_flags2'>
         <flag-bit name='needs_setting'/>
-        <flag-bit name='unk1'/>
+        <flag-bit name='entire_surface'/>
     </bitfield-type>
 
     <struct-type type-name='unit_wound' key-field='id'>
@@ -1143,30 +1125,72 @@
 
         <int32_t name="syndrome_id" ref-target='syndrome'/>
 
-        <int32_t name="unk_28"/>
-        <int32_t name="unk_2c"/>
-        <int32_t name="unk_30"/>
-        <int32_t name="unk_34"/>
-        <int32_t name="unk_38"/>
-        <int32_t name="unk_3c"/>
-        <pointer name="unk_40"/>
+        <int32_t name="pain"/>
+        <int32_t name="nausea"/>
+        <int32_t name="dizziness"/>
+        <int32_t name="paralysis"/>
+        <int32_t name="numbness"/>
+        <int32_t name="fever"/>
+        <pointer name="curse" type-name='wound_curse_info'/>
+    </struct-type>
+
+    <struct-type type-name='curse_attr_change'>
+        <static-array name='phys_att_perc' type-name='int32_t'
+                      count='6' index-enum='physical_attribute_type'/>
+        <static-array name='phys_att_add' type-name='int32_t'
+                      count='6' index-enum='physical_attribute_type'/>
+        <static-array name='ment_att_perc' type-name='int32_t'
+                      count='13' index-enum='mental_attribute_type'/>
+        <static-array name='ment_att_add' type-name='int32_t'
+                      count='13' index-enum='mental_attribute_type'/>
+    </struct-type>
+
+    <struct-type type-name='wound_curse_info'>
+        <compound name='add_tags1' type-name='cie_add_tag_mask1'/>
+        <compound name='rem_tags1' type-name='cie_add_tag_mask1'/>
+        <compound name='add_tags2' type-name='cie_add_tag_mask2'/>
+        <compound name='rem_tags2' type-name='cie_add_tag_mask2'/>
+
+        <bool name='name_visible'/>
+        <stl-string name='name'/>
+        <stl-string name='name_plural'/>
+        <stl-string name='name_adjective'/>
+
+        <uint32_t name='sym_and_color1' init-value='0x400'/>
+        <uint32_t name='sym_and_color2' init-value='0x400'/>
+        <uint32_t name='flash_period'/>
+        <uint32_t name='flash_time2'/>
+        <uint32_t name='speed_add'/>
+        <uint32_t name='speed_mul_percent' init-value='100'/>
+
+        <pointer name='attr_change' type-name='curse_attr_change'/>
+        <uint32_t name='luck_mul_percent' init-value='100'/>
+
+        <stl-vector name='interaction_id' type-name='int32_t' ref-target='creature_interaction_effect'/>
+        <stl-vector name='interaction_time' type-name='int32_t'/>
+        <int32_t name='time_counter'/>
+
+        <int32_t name='were_race' ref-target='creature_raw'/>
+        <int32_t name='were_caste' ref-target='caste_raw' aux-value='$$.were_race'/>
+        <stl-vector name='body_appearance' type-name='int32_t'/>
+        <stl-vector name='bp_appearance' type-name='int32_t'/>
     </struct-type>
 
     <enum-type base-type='int16_t' type-name='misc_trait_type'>
         <enum-attr name='tag'/>
 
-        <enum-item/>
-        <enum-item/>
-        <enum-item/>
-        <enum-item/>
-        <enum-item/>
-        <enum-item/>
-        <enum-item/>
+        <enum-item name='RequestWaterCooldown'/> for thirsty patients
+        <enum-item name='RequestFoodCooldown'/> for hungry patients
+        <enum-item name='RequestRescueCooldown'/>
+        <enum-item name='RequestHealthcareCooldown'/>
+        <enum-item name='GetDrinkCooldown'/>
+        <enum-item name='GetFoodCooldown'/>
+        <enum-item name='CleanSelfCooldown'/>
         <enum-item name='Migrant'/>
 
         <enum-item name='RoomComplaint'/>
         <enum-item name='UnnamedResident' comment='upon reaching zero, resident creature gets named'/>
-        <enum-item/>
+        <enum-item name='RentBedroomCooldown'/>
         <enum-item name='ClaimTrinketCooldown'/>
         <enum-item name='ClaimClothingCooldown'/>
         <enum-item name='WantsDrink'>
@@ -1185,7 +1209,7 @@
         <enum-item name='OnBreak'>
             <item-attr name='tag' value='ON_BREAK'/>
         </enum-item>
-        <enum-item/>
+        <enum-item name='PrepareToDie'/>
         <enum-item name='CaveAdapt'>
             <item-attr name='tag' value='CAVE_ADAPT'/>
         </enum-item>
@@ -1194,29 +1218,29 @@
         <enum-item/>
         <enum-item/>
 
+        <enum-item name='FollowUnitCooldown' comment='0-20, 200 on failed path'/>
         <enum-item/>
         <enum-item/>
         <enum-item/>
-        <enum-item/>
-        <enum-item/>
-        <enum-item/>
+        <enum-item name='DangerousTerrainCooldown' comment='created at 200, blocks repath?'/>
+        <enum-item name='Beaching' comment='triggered by BEACH_FREQUENCY'/>
         <enum-item name='IdleAreaCooldown'/>
         <enum-item/>
 
         <enum-item name='PartiedOut'>
             <item-attr name='tag' value='PARTIED_OUT'/>
         </enum-item>
-        <enum-item/>
-        <enum-item/>
-        <enum-item name='WoundsCleaned'/>
-        <enum-item/>
-        <enum-item/>
-        <enum-item/>
-        <enum-item/>
+        <enum-item name='DiagnosePatientCooldown' comment='0-2000'/>
+        <enum-item name='DressWoundCooldown'/>
+        <enum-item name='CleanPatientCooldown'/>
+        <enum-item name='SurgeryCooldown'/>
+        <enum-item name='SutureCooldown'/>
+        <enum-item name='SetBoneCooldown'/>
+        <enum-item name='PlaceInTractionCooldown'/>
 
-        <enum-item/>
-        <enum-item/>
-        <enum-item/>
+        <enum-item name='ApplyCastCooldown'/>
+        <enum-item name='ImmobilizeBreakCooldown'/>
+        <enum-item name='BringCrutchCooldown'/>
         <enum-item/>
         <enum-item name='MilkCounter'>
             <item-attr name='tag' value='MILK_COUNTER'/>
@@ -1240,6 +1264,11 @@
         <enum-item/>
         <enum-item/>
         <enum-item name='RevertWildTimer' comment='one trigger => --training_level'/>
+        <enum-item/>
+
+        <enum-item name='NoPantsAnger'/>
+        <enum-item name='NoShirtAnger'/>
+        <enum-item name='NoShoesAnger'/>
     </enum-type>
 
     <struct-type type-name='unit_misc_trait'>
@@ -1329,11 +1358,11 @@
         <compound name="flags" type-name='unit_health_flags'/>
         <stl-vector name="body_part_flags" type-name='unit_bp_health_flags'/>
 
-        <int16_t name="unk_18"/>
-        <int16_t name="unk_1a"/>
-        <int16_t name="unk_1c"/>
-        <int16_t name="unk_1e"/>
-        <int16_t name="unk_20"/>
+        <int16_t name="unk_18_cntdn"/>
+        <int16_t name="immobilize_cntdn"/>
+        <int16_t name="dressing_cntdn"/>
+        <int16_t name="suture_cntdn"/>
+        <int16_t name="crutch_cntdn"/>
 
         <stl-vector name="op_history">
             <pointer>
@@ -1396,12 +1425,8 @@
 
         <static-array type-name='unit_attribute' name='mental_attrs' count='13' index-enum='mental_attribute_type'/>
 
-        <stl-vector name='skills'>
-            <pointer type-name='unit_skill'/>
-        </stl-vector>
-        <stl-vector name='preferences'>
-            <pointer type-name='unit_preference'/>
-        </stl-vector>
+        <stl-vector name='skills' pointer-type='unit_skill'/>
+        <stl-vector name='preferences' pointer-type='unit_preference'/>
 
         <static-array type-name='uint16_t' name='traits' count='30' index-enum='personality_facet_type'/>
 
@@ -1460,6 +1485,31 @@
         <bool name='active'/>
 
         <uint32_t name='prefstring_seed' comment='feeds into a simple RNG to choose which prefstring to use'/>
+    </struct-type>
+
+    <struct-type type-name='unit_complaint'>
+        <enum base-type='int16_t' name="type">
+            <enum-item name='SelfUnemployed'/>
+            <enum-item name='GuildUnemployed'/>
+            <enum-item name='NeedWeapons' comment='no longer used'/>
+            <enum-item name='IsAngry'/>
+            <enum-item name='IsSad'/>
+        </enum>
+        <enum base-type='int16_t' type-name='guild_id' name="guild"/>
+        <int32_t name='age'/>
+    </struct-type>
+
+    <struct-type type-name='unit_request'>
+        <enum base-type='int16_t' name="type">
+            <enum-item name='DoGuildJobs'/>
+        </enum>
+        <enum base-type='int16_t' type-name='guild_id' name="guild"/>
+        <int16_t name='count'/>
+    </struct-type>
+
+    <struct-type type-name='unit_coin_debt'>
+        <int32_t name='recipient' ref-target='unit'/>
+        <int32_t name='amount'/>
     </struct-type>
 
     <struct-type type-name='unit_chunk'

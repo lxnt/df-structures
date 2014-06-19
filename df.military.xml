@@ -1,44 +1,4 @@
 <data-definition>
-    <enum-type type-name='uniform_material_class' base-type='int16_t'>
-        <enum-item name='None' value='-1'/>
-
-        <enum-item comment='BROKEN'/>
-        <enum-item name='Leather'/>
-        <enum-item name='Cloth'/>
-        <enum-item name='Wood'/>
-        <enum-item comment='BROKEN'/>
-
-        <enum-item name='Stone'/>
-        <enum-item comment='BROKEN'/>
-        <enum-item comment='BROKEN'/>
-        <enum-item comment='BROKEN'/>
-        <enum-item comment='BROKEN'/>
-
-        <enum-item comment='BROKEN'/>
-        <enum-item comment='BROKEN'/>
-        <enum-item comment='BROKEN'/>
-        <enum-item comment='BROKEN'/>
-        <enum-item name='Metal'/>
-
-        <enum-item comment='BROKEN'/>
-        <enum-item name='Metal2'/>
-        <enum-item name='Gem'/>
-        <enum-item name='Bone'/>
-        <enum-item name='Shell'/>
-
-        <enum-item name='Pearl'/>
-        <enum-item name='Tooth'/>
-        <enum-item name='Horn'/>
-        <enum-item comment='BROKEN'/>
-        <enum-item comment='BROKEN'/>
-
-        <enum-item comment='BROKEN'/>
-        <enum-item comment='BROKEN'/>
-        <enum-item name='PlantFiber'/>
-        <enum-item name='Silk'/>
-        <enum-item name='Yarn'/>
-    </enum-type>
-
     <bitfield-type type-name='uniform_indiv_choice'>
         <flag-bit name='any'/>
         <flag-bit name='melee'/>
@@ -49,7 +9,7 @@
         <enum base-type='int16_t' name="item_type" type-name='item_type'/>
         <int16_t name="item_subtype" refers-to='(item-subtype-target $$._parent.item_type $)'/>
 
-        <enum base-type='int16_t' name="material_class" type-name='uniform_material_class'/>
+        <enum base-type='int16_t' name="material_class" type-name='entity_material_category'/>
 
         <int16_t name='mattype' ref-target='material' aux-value='$$.matindex'/>
         <int32_t name='matindex'/>
@@ -125,20 +85,14 @@
 
         <code-helper name='describe'>(describe-obj @.occupant)</code-helper>
 
-        <stl-vector name="orders">
-            <pointer type-name='squad_order'/>
-        </stl-vector>
+        <stl-vector name="orders" pointer-type='squad_order'/>
 
         <static-array name='preferences' count='4' index-enum='barrack_preference_category'>
-            <stl-vector>
-                <int32_t ref-target='building'/>
-            </stl-vector>
+            <stl-vector type-name='int32_t' ref-target='building'/>
         </static-array>
 
         <static-array name='uniform' count='7' index-enum='uniform_category'>
-            <stl-vector>
-                <pointer type-name='squad_uniform_spec'/>
-            </stl-vector>
+            <stl-vector pointer-type='squad_uniform_spec'/>
         </static-array>
 
         <stl-string name="unk_c4"/>
@@ -197,13 +151,9 @@
             (describe-obj $.name)
         </code-helper>
 
-        <stl-vector name='positions'>
-            <pointer type-name='squad_position'/>
-        </stl-vector>
+        <stl-vector name='positions' pointer-type='squad_position'/>
 
-        <stl-vector name="orders">
-            <pointer type-name='squad_order'/>
-        </stl-vector>
+        <stl-vector name="orders" pointer-type='squad_order'/>
 
         <stl-vector name="schedule">
             <pointer>
@@ -226,9 +176,7 @@
         <int32_t name="uniform_priority"/>
         <int32_t name="activity" ref-target='activity_entry'/>
 
-        <stl-vector name="ammunition">
-            <pointer type-name='squad_ammo_spec'/>
-        </stl-vector>
+        <stl-vector name="ammunition" pointer-type='squad_ammo_spec'/>
 
         <stl-vector name="train_weapon_free">
             <int32_t ref-target='item'/>
@@ -330,52 +278,6 @@
         </stl-vector>
         <stl-string name='title'/>
     </class-type>
-
-    <struct-type type-name='entity_uniform_item'>
-        <int8_t name='unk_0'/>
-        <int8_t name='unk_1'/>
-        <int16_t name='color' ref-target='descriptor_color'/>
-        <int32_t name='unk_4'/>
-        <int16_t name='unk_8'/>
-        <int16_t name='unk_a'/>
-        <int16_t name='unk_c'/>
-        <int16_t name='unk_e'/>
-        <compound name="indiv_choice" type-name='uniform_indiv_choice'/>
-        <int16_t name="mattype" ref-target='material' aux-value='$$.matindex'/>
-        <int32_t name="matindex"/>
-        <enum base-type='int16_t' name="material_class" type-name='uniform_material_class'/>
-    </struct-type>
-
-    <struct-type type-name='entity_uniform' key-field='id'>
-        <int32_t name="id"/>
-        <int16_t name="unk_4"/>
-
-        <code-helper name='describe'>
-            (describe-obj $.name)
-        </code-helper>
-
-        <static-array name='uniform_item_types' count='7' index-enum='uniform_category'>
-            <stl-vector>
-                <enum base-type='int16_t' type-name='item_type'/>
-            </stl-vector>
-        </static-array>
-
-        <static-array name='uniform_item_subtypes' count='7' index-enum='uniform_category'>
-            <stl-vector>
-                <int16_t refers-to='(item-subtype-target $$._parent._parent._parent.uniform_item_types[$$._parent._key][$$._key] $)'/>
-            </stl-vector>
-        </static-array>
-
-        <static-array name='uniform_item_info' count='7' index-enum='uniform_category'>
-            <stl-vector>
-                <pointer type-name='entity_uniform_item'/>
-            </stl-vector>
-        </static-array>
-
-        <stl-string name="name"/>
-
-        <compound name='flags' type-name='uniform_flags'/>
-    </struct-type>
 </data-definition>
 
 <!--
